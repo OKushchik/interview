@@ -33,7 +33,8 @@ export const env = {
   jwtSecret: required('JWT_SECRET', 'dev-jwt-secret-change-me'),
   clientOrigin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
   port: Number(process.env.PORT ?? 3001),
-  openaiApiKey: process.env.OPENAI_API_KEY ?? '',
+  // Prefer OPENAI_API_KEY; VITE_OPENAI_API_KEY kept as temporary alias if still in server/.env
+  openaiApiKey: process.env.OPENAI_API_KEY ?? process.env.VITE_OPENAI_API_KEY ?? '',
   nodeEnv: process.env.NODE_ENV ?? 'development',
   resendApiKey: process.env.RESEND_API_KEY ?? '',
   mailFrom: process.env.MAIL_FROM ?? 'noreply@localhost',

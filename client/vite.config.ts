@@ -17,6 +17,9 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
+        // OpenAI prepare/report can take 30–60s; default proxy timeouts cause ECONNRESET
+        timeout: 120_000,
+        proxyTimeout: 120_000,
       },
     },
   },

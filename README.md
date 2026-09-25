@@ -34,14 +34,14 @@ npm run dev
 
 ## Конфігурація AI
 
-Скопіюйте `.env.example` в `.env` у корені репозиторію (Vite читає його звідти):
+Ключ OpenAI зберігається лише на сервері (`server/.env`), не в клієнтських `VITE_*` змінних:
 
 ```bash
-cp .env.example .env
+cp server/.env.example server/.env
 ```
 
-- `VITE_USE_MOCK_AI=true` — використовувати mock-дані (за замовчуванням)
-- `VITE_OPENAI_API_KEY` — ваш API ключ OpenAI для реальної генерації
+- `OPENAI_API_KEY` — API ключ OpenAI для реальної генерації питань і аналізу
+- Без ключа сервер автоматично використовує mock-дані
 
 ## Функціонал
 

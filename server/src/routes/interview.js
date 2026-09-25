@@ -1,16 +1,24 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
-import { analyzeBotSchema } from '../services/schemas.js'
+import { analyzeBotSchema, prepareSchema } from '../services/schemas.js'
+import { prepareInterview } from '../services/prepareInterview.js'
 import { z } from 'zod'
 
+const vacancyBodySchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  level: z.enum(['junior', 'middle', 'senior']),
+  skills: z.array(z.string()),
+  description: z.string(),
+}).passthrough()
+
+const prepareBodySchema = z.object({
+  vacancy: vacancyBodySchema,
+  config: prepareSchema,
+})
+
 const reportSchema = z.object({
-  vacancy: z.object({
-    id: z.string(),
-    title: z.string(),
-    level: z.enum(['junior', 'middle', 'senior']),
-    skills: z.array(z.string()),
-    description: z.string(),
-  }).passthrough(),
+  vacancy: vacancyBodySchema,
   config: z.object({
     type: z.enum(['quiz', 'bot']),
     questionCount: z.number(),
@@ -27,6 +35,25 @@ const reportSchema = z.object({
 export function createInterviewRouter(jwtSecret, generator) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))
+
+  router.post('/prepare', async (req, res, next) => {
+    try {
+      const parsed = prepareBodySchema.safeParse(req.body)
+      if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
+        return
+      }
+      const { vacancy, config } = parsed.data
+      const prepared = await prepareInterview(vacancy, config, generator)
+      res.json({
+        vacancy,
+        config,
+        ...prepared,
+      })
+    } catch (error) {
+      next(error)
+    }
+  })
 
   router.post('/analyze-bot', async (req, res, next) => {
     try {
