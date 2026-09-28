@@ -6,6 +6,7 @@ import { MOCK_VACANCIES } from '@/data/mockVacancies'
 import { useAuthStore } from '@/store/authStore'
 import { useInterviewStore } from '@/store/interviewStore'
 import { generateQuestions } from '@/services/aiService'
+import { ApiError } from '@/services/api'
 import { Header } from '@/components/layout/Header'
 import { VacancyCard } from '@/components/vacancies/VacancyCard'
 import { CreateVacancyModal } from '@/components/modals/CreateVacancyModal'
@@ -22,6 +23,7 @@ export function VacanciesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const allVacancies = [...MOCK_VACANCIES, ...(user?.vacancies ?? []), ...customVacancies]
 
   const handleStartInterview = (vacancy: Vacancy) => {
@@ -40,11 +42,11 @@ export function VacanciesPage() {
     if (!selectedVacancy) return
 
     setGenerating(true)
+    setGenerateError(null)
     startSession(selectedVacancy, config)
 
     try {
       const questions = await generateQuestions(selectedVacancy, config)
-      console.log('questions', questions)
       setSession({
         vacancy: selectedVacancy,
         config,
@@ -57,7 +59,10 @@ export function VacanciesPage() {
       setShowConfigModal(false)
       navigate('/interview')
     } catch (error) {
-      console.error('Failed to generate questions:', error)
+      const message = error instanceof ApiError
+        ? error.message
+        : 'Не вдалося згенерувати питання'
+      setGenerateError(message)
     } finally {
       setGenerating(false)
     }
@@ -119,6 +124,7 @@ export function VacanciesPage() {
         onStart={handleConfigStart}
         isGenerating={isGenerating}
         vacancyTitle={selectedVacancy?.title || ''}
+        error={generateError}
       />
     </div>
   )

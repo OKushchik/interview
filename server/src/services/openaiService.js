@@ -1,31 +1,49 @@
 import { parseLlmJson } from '../lib/parseLlmJson.js'
 
+function openAiError(message, statusCode = 502) {
+  const error = new Error(message)
+  error.statusCode = statusCode
+  error.expose = true
+  return error
+}
+
 async function callOpenAI(apiKey, prompt, json = false) {
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: 'gpt-4o-mini',
-      messages: [{ role: 'user', content: prompt }],
-      temperature: 0.7,
-      ...(json ? { response_format: { type: 'json_object' } } : {}),
-    }),
-  })
+  let response
+  try {
+    response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.7,
+        ...(json ? { response_format: { type: 'json_object' } } : {}),
+      }),
+    })
+  } catch (error) {
+    const cause = error?.cause?.message || error?.message || 'network error'
+    throw openAiError(`OpenAI request failed: ${cause}`)
+  }
 
   if (!response.ok) {
-    throw new Error(`OpenAI API error: ${response.status}`)
+    const detail = (await response.text()).slice(0, 300)
+    throw openAiError(`OpenAI API error: ${response.status} ${detail}`.trim())
   }
 
   const data = await response.json()
-  return data.choices[0].message.content
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw openAiError('OpenAI returned an empty response')
+  }
+  return content
 }
 
 function requireApiKey(apiKey) {
   if (!apiKey) {
-    throw new Error('OpenAI API key is not configured')
+    throw openAiError('OpenAI API key is not configured', 500)
   }
 }
 

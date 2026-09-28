@@ -12,6 +12,7 @@ interface InterviewConfigModalProps {
   onStart: (config: InterviewConfig) => void
   isGenerating: boolean
   vacancyTitle: string
+  error?: string | null
 }
 
 const TYPES: { value: InterviewType; label: string; description: string; icon: typeof Target }[] = [
@@ -35,6 +36,7 @@ export function InterviewConfigModal({
   onStart,
   isGenerating,
   vacancyTitle,
+  error,
 }: InterviewConfigModalProps) {
   const [type, setType] = useState<InterviewType>('quiz')
   const [questionCount, setQuestionCount] = useState(10)
@@ -92,6 +94,10 @@ export function InterviewConfigModal({
           checked={enableCoding}
           onChange={setEnableCoding}
         />
+
+        {error && (
+          <p className="text-sm text-red-400">{error}</p>
+        )}
 
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="ghost" onClick={onClose} disabled={isGenerating}>

@@ -49,7 +49,9 @@ async function main() {
 
   app.use((err, _req, res, _next) => {
     console.error(err)
-    res.status(500).json({ error: 'Internal server error' })
+    const status = Number(err.statusCode) || 500
+    const message = err.expose ? err.message : 'Internal server error'
+    res.status(status).json({ error: message })
   })
 
   app.listen(env.port, () => {
