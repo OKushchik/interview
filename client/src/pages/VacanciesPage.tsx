@@ -22,7 +22,7 @@ export function VacanciesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
-  const allVacancies = [...MOCK_VACANCIES, ...customVacancies]
+  const allVacancies = [...MOCK_VACANCIES, ...(user?.vacancies ?? []), ...customVacancies]
 
   const handleStartInterview = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy)
@@ -78,15 +78,19 @@ export function VacanciesPage() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {allVacancies.map((vacancy) => (
-            <VacancyCard
-              key={vacancy.id}
-              vacancy={vacancy}
-              onStart={handleStartInterview}
-            />
-          ))}
-        </div>
+        {allVacancies.length === 0 ? (
+          <p className="text-center text-muted mb-12">Вакансій поки немає.</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {allVacancies.map((vacancy) => (
+              <VacancyCard
+                key={vacancy.id}
+                vacancy={vacancy}
+                onStart={handleStartInterview}
+              />
+            ))}
+          </div>
+        )}
 
         {isAdmin && (
           <div className="flex justify-center">

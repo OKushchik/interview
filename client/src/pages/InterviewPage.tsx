@@ -31,6 +31,7 @@ export function InterviewPage() {
   }
 
   const { vacancy, config, quizQuestions, botQuestions, codingTask } = currentSession
+  const hasQuestions = config.type === 'quiz' ? quizQuestions.length > 0 : botQuestions.length > 0
 
   const finishAndGenerateReport = async () => {
     setPhase('generating')
@@ -87,7 +88,20 @@ export function InterviewPage() {
           </div>
         )}
 
-        {phase === 'interview' && config.type === 'quiz' && (
+        {phase === 'interview' && !hasQuestions && !codingTask && (
+          <p className="text-center text-muted py-16">Для цієї вакансії немає питань.</p>
+        )}
+
+        {phase === 'interview' && !hasQuestions && codingTask && (
+          <CodingSection
+            task={codingTask}
+            code={codingCode}
+            onCodeChange={setCodingCode}
+            onComplete={handleCodingComplete}
+          />
+        )}
+
+        {phase === 'interview' && hasQuestions && config.type === 'quiz' && (
           <QuizInterview
             questions={quizQuestions}
             answers={quizAnswers}
@@ -99,7 +113,7 @@ export function InterviewPage() {
           />
         )}
 
-        {phase === 'interview' && config.type === 'bot' && (
+        {phase === 'interview' && hasQuestions && config.type === 'bot' && (
           <BotInterview
             questions={botQuestions}
             answers={botAnswers}

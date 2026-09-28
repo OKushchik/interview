@@ -9,6 +9,9 @@ export interface Vacancy {
   skills: string[]
   description: string
   isCustom?: boolean
+  quizQuestions?: QuizQuestion[] | null
+  botQuestions?: BotQuestion[] | null
+  codingTask?: CodingTask | null
 }
 
 export interface VacancyFormData {
@@ -105,7 +108,7 @@ export interface AuthUser {
   email: string
   role: UserRole
   pendingEmail: string | null
-  vacancies: unknown[]
+  vacancies: Vacancy[]
 }
 
 
