@@ -52,6 +52,7 @@ export function createQuestionGenerator(apiKey) {
     async generateQuiz(vacancy, count) {
       if (!apiKey) return []
       const prompt = `Generate ${count} multiple choice interview questions for a ${vacancy.level} ${vacancy.title} position with skills: ${vacancy.skills.join(', ')}.
+with only one correct answer
 Return JSON only with format:
 {"questions":[{"question":"...","options":["a","b","c","d"],"correctIndex":0}]}`
       const raw = await callOpenAI(apiKey, prompt, true)
