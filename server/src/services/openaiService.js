@@ -54,7 +54,7 @@ export function createQuestionGenerator(apiKey) {
       const prompt = `Generate ${count} multiple choice interview questions for a ${vacancy.level} ${vacancy.title} position with skills: ${vacancy.skills.join(', ')}.
 with only one correct answer
 Return JSON only with format:
-{"questions":[{"question":"...","options":["a","b","c","d"],"correctIndex":0}]}`
+{"questions":[{"question":"...","options":["a","b","c","d"]}]}`
       const raw = await callOpenAI(apiKey, prompt, true)
       const parsed = parseLlmJson(raw)
       const questions = Array.isArray(parsed.questions) ? parsed.questions : []
