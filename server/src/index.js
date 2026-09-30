@@ -47,6 +47,10 @@ async function main() {
   app.use('/api/vacancies', createVacanciesRouter(db, env.jwtSecret, generator))
   app.use('/api/interview', createInterviewRouter(env.jwtSecret, generator))
 
+  app.use((_req, res) => {
+    res.status(404).json({ error: 'Not found' })
+  })
+
   app.use((err, _req, res, _next) => {
     console.error(err)
     const status = Number(err.statusCode) || 500

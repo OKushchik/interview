@@ -31,6 +31,7 @@ export interface QuizQuestion {
   question: string
   options: string[]
   correctIndex: number
+  explanation?: string
 }
 
 export interface BotQuestion {
@@ -72,13 +73,57 @@ export interface InterviewSession {
   codingAnswer?: CodingAnswer
 }
 
+export interface QuizReportDetail {
+  questionId: string
+  question: string
+  selectedAnswer: string
+  correctAnswer: string
+  isCorrect: boolean
+  explanation: string
+}
+
+export interface QuizReportSection {
+  score: number
+  maxScore: number
+  correctCount: number
+  totalCount: number
+  summary: string
+  details: QuizReportDetail[]
+}
+
+export interface BotReportDetail {
+  questionId: string
+  question: string
+  answer: string
+  analysis: string
+}
+
+export interface BotReportSection {
+  score: number
+  maxScore: number
+  summary: string
+  details: BotReportDetail[]
+}
+
+export interface CodingReportSection {
+  score: number
+  maxScore: number
+  summary: string
+  correctness: string
+  readability: string
+  improvements: string[]
+}
+
 export interface InterviewReport {
   score: number
   maxScore: number
+  sections: {
+    quiz?: QuizReportSection
+    bot?: BotReportSection
+    coding?: CodingReportSection
+  }
   strengths: string[]
   weaknesses: string[]
-  codingFeedback?: string
-  voiceFeedback?: string
   summary: string
 }
 

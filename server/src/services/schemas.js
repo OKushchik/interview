@@ -5,6 +5,7 @@ export const quizQuestionSchema = z.object({
   question: z.string().min(1),
   options: z.array(z.string().min(1)).length(4),
   correctIndex: z.number().int().min(0).max(3),
+  explanation: z.string().optional(),
 })
 
 export const botQuestionSchema = z.object({
