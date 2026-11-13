@@ -22,7 +22,7 @@ export function initModels(sequelize) {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('admin', 'candidate'),
+        type: DataTypes.ENUM('admin', 'candidate', 'recruiter'),
         allowNull: false,
         defaultValue: 'candidate',
       },

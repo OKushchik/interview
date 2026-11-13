@@ -7,6 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 export function AccountPage() {
   const user = useAuthStore((s) => s.user)
   const changeEmail = useAuthStore((s) => s.changeEmail)
+  const isGuest = user?.email === 'guest@guest.local'
 
   const [newEmail, setNewEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -46,6 +47,11 @@ export function AccountPage() {
           </div>
         )}
 
+        {isGuest ? (
+          <p className="glass-card rounded-2xl p-6 text-sm text-muted">
+            Ви увійшли як гість. Щоб змінювати email і пароль, зареєструйтесь.
+          </p>
+        ) : (
         <form className="glass-card rounded-2xl p-6 space-y-4" onSubmit={onSubmit}>
           <h2 className="font-semibold text-text">Змінити email</h2>
           <Input
@@ -74,6 +80,7 @@ export function AccountPage() {
             {submitting ? 'Зачекайте…' : 'Надіслати підтвердження'}
           </Button>
         </form>
+        )}
       </main>
     </div>
   )

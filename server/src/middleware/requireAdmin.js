@@ -10,7 +10,7 @@ export function createRequireAdmin(db) {
         res.status(401).json({ error: 'Unauthorized' })
         return
       }
-      if (user.role !== 'admin') {
+      if (user.role !== 'admin' && user.role !== 'recruiter') {
         res.status(403).json({ error: 'Forbidden' })
         return
       }
