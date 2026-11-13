@@ -1,6 +1,6 @@
 export const schemaStatements = [
   `DO $$ BEGIN
-    CREATE TYPE "UserRole" AS ENUM ('admin', 'candidate');
+    CREATE TYPE "UserRole" AS ENUM ('admin', 'candidate', 'recruiter');
   EXCEPTION
     WHEN duplicate_object THEN NULL;
   END $$;`,
@@ -16,6 +16,7 @@ export const schemaStatements = [
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
   );`,
+  `ALTER TYPE "UserRole" ADD VALUE IF NOT EXISTS 'recruiter';`,
   `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "role" "UserRole" NOT NULL DEFAULT 'candidate';`,
   `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verified" BOOLEAN NOT NULL DEFAULT false;`,
   `ALTER TABLE "users" ADD COLUMN IF NOT EXISTS "email_verification_token_hash" TEXT;`,

@@ -1,7 +1,9 @@
-import type { AuthUser } from '@/types'
+import type { AuthUser, RegisterRole } from '@/types'
 import { apiRequest } from './api'
 
 export type AuthCredentials = { email: string; password: string }
+
+export type RegisterCredentials = AuthCredentials & { role: RegisterRole }
 
 export const authApi = {
   login(credentials: AuthCredentials) {
@@ -10,7 +12,10 @@ export const authApi = {
       body: JSON.stringify(credentials),
     })
   },
-  register(credentials: AuthCredentials) {
+  guest() {
+    return apiRequest<{ user: AuthUser }>('/api/auth/guest', { method: 'POST' })
+  },
+  register(credentials: RegisterCredentials) {
     return apiRequest<{ message: string; email: string }>('/api/auth/register', {
       method: 'POST',
       body: JSON.stringify(credentials),

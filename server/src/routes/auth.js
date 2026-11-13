@@ -1,3 +1,4 @@
+import { randomBytes } from 'node:crypto'
 import { Router } from 'express'
 import { hashPassword, issueSession, publicUser, verifyPassword, endSession } from '../services/authService.js'
 import {
@@ -19,6 +20,7 @@ import {
   startPasswordReset,
 } from '../services/emailAuthService.js'
 
+const GUEST_EMAIL = 'guest@guest.local'
 const NEUTRAL_VERIFY_MESSAGE = 'If an account exists, a verification email was sent'
 const NEUTRAL_RESET_MESSAGE = 'If an account exists, password reset instructions were sent'
 
@@ -51,6 +53,7 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
         email: parsed.data.email,
         passwordHash: await hashPassword(parsed.data.password),
         emailVerified: false,
+        role: parsed.data.role,
       })
 
       try {
@@ -87,6 +90,26 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
       if (!user.emailVerified) {
         res.status(403).json({ error: 'Email not verified' })
         return
+      }
+
+      const dto = await publicUser(db, user)
+      issueSession(res, dto, jwtSecret, secureCookies)
+      res.json({ user: dto })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  router.post('/guest', async (_req, res, next) => {
+    try {
+      let user = await db.User.findOne({ where: { email: GUEST_EMAIL } })
+      if (!user) {
+        user = await db.User.create({
+          email: GUEST_EMAIL,
+          passwordHash: await hashPassword(randomBytes(32).toString('hex')),
+          emailVerified: true,
+          role: 'candidate',
+        })
       }
 
       const dto = await publicUser(db, user)
@@ -201,6 +224,11 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
       const user = await db.User.findOne({ where: { id: req.user.id } })
       if (!user) {
         res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      if (user.email === GUEST_EMAIL) {
+        res.status(403).json({ error: 'Guest account cannot be changed' })
         return
       }
 

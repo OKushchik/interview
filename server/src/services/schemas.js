@@ -23,9 +23,10 @@ export const codingTaskSchema = z.object({
 export const registerSchema = z.object({
   email: z.string().email().transform((value) => value.trim().toLowerCase()),
   password: z.string().min(8),
+  role: z.enum(['candidate', 'recruiter']).default('candidate'),
 })
 
-export const loginSchema = registerSchema
+export const loginSchema = registerSchema.omit({ role: true })
 
 export const emailOnlySchema = z.object({
   email: registerSchema.shape.email,

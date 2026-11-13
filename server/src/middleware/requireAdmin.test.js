@@ -36,6 +36,23 @@ describe('createRequireAdmin', () => {
     assert.equal(req.user.role, 'admin')
   })
 
+  it('calls next when user role is recruiter', async () => {
+    const db = {
+      User: {
+        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'recruiter' })),
+      },
+    }
+    const requireAdmin = createRequireAdmin(db)
+    const req = { user: { id: '1', email: 'a@b.c' } }
+    const res = mockRes()
+    let nextCalled = false
+    await requireAdmin(req, res, () => {
+      nextCalled = true
+    })
+    assert.equal(nextCalled, true)
+    assert.equal(req.user.role, 'recruiter')
+  })
+
   it('responds 403 when user role is candidate', async () => {
     const db = {
       User: {

@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/Button'
 export function VacanciesPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const isAdmin = user?.role === 'admin'
+  const canCreateVacancy = user?.role === 'admin' || user?.role === 'recruiter'
   const { customVacancies, addCustomVacancy, startSession, setSession, setGenerating, isGenerating } =
     useInterviewStore()
 
@@ -97,7 +97,7 @@ export function VacanciesPage() {
           </div>
         )}
 
-        {isAdmin && (
+        {canCreateVacancy && (
           <div className="flex justify-center">
             <Button size="lg" onClick={() => setShowCreateModal(true)}>
               <Plus size={20} />
@@ -107,7 +107,7 @@ export function VacanciesPage() {
         )}
       </main>
 
-      {isAdmin && (
+      {canCreateVacancy && (
         <CreateVacancyModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}

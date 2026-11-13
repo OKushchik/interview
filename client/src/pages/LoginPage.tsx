@@ -1,16 +1,38 @@
 import { FormEvent, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Brain } from 'lucide-react'
+import { Brain, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import type { RegisterRole } from '@/types'
 import { useAuthStore } from '@/store/authStore'
 
 type Mode = 'login' | 'register'
+
+function PasswordVisibilityButton({
+  visible,
+  onToggle,
+}: {
+  visible: boolean
+  onToggle: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="text-muted hover:text-text transition-colors"
+      aria-label={visible ? 'Приховати пароль' : 'Показати пароль'}
+      aria-pressed={visible}
+    >
+      {visible ? <EyeOff size={18} aria-hidden /> : <Eye size={18} aria-hidden />}
+    </button>
+  )
+}
 
 export function LoginPage() {
   const navigate = useNavigate()
   const login = useAuthStore((s) => s.login)
   const register = useAuthStore((s) => s.register)
+  const loginAsGuest = useAuthStore((s) => s.loginAsGuest)
   const error = useAuthStore((s) => s.error)
   const clearError = useAuthStore((s) => s.clearError)
   const pendingVerificationEmail = useAuthStore((s) => s.pendingVerificationEmail)
@@ -19,6 +41,10 @@ export function LoginPage() {
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
+  const [role, setRole] = useState<RegisterRole>('candidate')
   const [submitting, setSubmitting] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
@@ -29,6 +55,9 @@ export function LoginPage() {
     clearError()
     setLocalError(null)
     setResendMessage(null)
+    setPasswordConfirm('')
+    setShowPassword(false)
+    setShowPasswordConfirm(false)
   }
 
   const onSubmit = async (e: FormEvent) => {
@@ -42,14 +71,33 @@ export function LoginPage() {
       return
     }
 
+    if (mode === 'register' && password !== passwordConfirm) {
+      setLocalError('Паролі не збігаються')
+      return
+    }
+
     setSubmitting(true)
     try {
       if (mode === 'login') {
         await login(email.trim(), password)
         navigate('/vacancies', { replace: true })
       } else {
-        await register(email.trim(), password)
+        await register(email.trim(), password, role)
       }
+    } catch {
+      // error already in store
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const onGuest = async () => {
+    setLocalError(null)
+    clearError()
+    setSubmitting(true)
+    try {
+      await loginAsGuest()
+      navigate('/vacancies', { replace: true })
     } catch {
       // error already in store
     } finally {
@@ -138,14 +186,67 @@ export function LoginPage() {
           />
           <Input
             label="Пароль"
-            type="password"
+            type={showPassword ? 'text' : 'password'}
             autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="мінімум 8 символів"
+            trailing={
+              <PasswordVisibilityButton
+                visible={showPassword}
+                onToggle={() => setShowPassword((v) => !v)}
+              />
+            }
           />
+
+          {mode === 'register' && (
+            <Input
+              label="Підтвердження пароля"
+              type={showPasswordConfirm ? 'text' : 'password'}
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="повторіть пароль"
+              trailing={
+                <PasswordVisibilityButton
+                  visible={showPasswordConfirm}
+                  onToggle={() => setShowPasswordConfirm((v) => !v)}
+                />
+              }
+            />
+          )}
+
+          {mode === 'register' && (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-text">Роль</p>
+              <div className="flex rounded-xl bg-background/50 p-1 border border-border">
+                <button
+                  type="button"
+                  className={`flex-1 py-2 text-sm rounded-lg transition-colors ${
+                    role === 'recruiter' ? 'bg-surface text-text' : 'text-muted hover:text-text'
+                  }`}
+                  aria-pressed={role === 'recruiter'}
+                  onClick={() => setRole('recruiter')}
+                >
+                  Створення вакансій
+                </button>
+                <button
+                  type="button"
+                  className={`flex-1 py-2 text-sm rounded-lg transition-colors ${
+                    role === 'candidate' ? 'bg-surface text-text' : 'text-muted hover:text-text'
+                  }`}
+                  aria-pressed={role === 'candidate'}
+                  onClick={() => setRole('candidate')}
+                >
+                  Кандидат
+                </button>
+              </div>
+            </div>
+          )}
 
           {mode === 'login' && (
             <div className="text-right">
@@ -166,6 +267,18 @@ export function LoginPage() {
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? 'Зачекайте…' : mode === 'login' ? 'Увійти' : 'Зареєструватися'}
           </Button>
+
+          {mode === 'login' && (
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              disabled={submitting}
+              onClick={onGuest}
+            >
+              Увійти як гість
+            </Button>
+          )}
         </form>
       </div>
     </div>

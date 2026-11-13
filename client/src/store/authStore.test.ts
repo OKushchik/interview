@@ -85,7 +85,12 @@ describe('authStore', () => {
       message: 'Check your email',
       email: 'a@b.c',
     })
-    await useAuthStore.getState().register('a@b.c', 'password1')
+    await useAuthStore.getState().register('a@b.c', 'password1', 'recruiter')
+    expect(authApi.register).toHaveBeenCalledWith({
+      email: 'a@b.c',
+      password: 'password1',
+      role: 'recruiter',
+    })
     expect(useAuthStore.getState()).toMatchObject({
       status: 'anonymous',
       user: null,
