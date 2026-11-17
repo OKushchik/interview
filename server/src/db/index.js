@@ -1,7 +1,6 @@
 import { Sequelize } from 'sequelize'
 import { env } from '../config.js'
 import { initModels } from './models.js'
-import { schemaStatements } from './schema.js'
 
 export const sequelize = new Sequelize(env.databaseUrl, {
   dialect: 'postgres',
@@ -84,7 +83,4 @@ export const db = {
 
 export async function initDatabase(instance = sequelize) {
   await instance.authenticate()
-  for (const statement of schemaStatements) {
-    await instance.query(statement)
-  }
 }

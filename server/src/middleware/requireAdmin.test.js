@@ -19,10 +19,10 @@ function mockRes() {
 }
 
 describe('createRequireAdmin', () => {
-  it('calls next when user role is admin', async () => {
+  it('calls next when user role is super_admin', async () => {
     const db = {
       User: {
-        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'admin' })),
+        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'super_admin' })),
       },
     }
     const requireAdmin = createRequireAdmin(db)
@@ -33,13 +33,13 @@ describe('createRequireAdmin', () => {
       nextCalled = true
     })
     assert.equal(nextCalled, true)
-    assert.equal(req.user.role, 'admin')
+    assert.equal(req.user.role, 'super_admin')
   })
 
-  it('calls next when user role is recruiter', async () => {
+  it('calls next when user role is company_admin', async () => {
     const db = {
       User: {
-        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'recruiter' })),
+        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'company_admin' })),
       },
     }
     const requireAdmin = createRequireAdmin(db)
@@ -50,13 +50,13 @@ describe('createRequireAdmin', () => {
       nextCalled = true
     })
     assert.equal(nextCalled, true)
-    assert.equal(req.user.role, 'recruiter')
+    assert.equal(req.user.role, 'company_admin')
   })
 
-  it('responds 403 when user role is candidate', async () => {
+  it('responds 403 when user role is user', async () => {
     const db = {
       User: {
-        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'candidate' })),
+        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'user' })),
       },
     }
     const requireAdmin = createRequireAdmin(db)

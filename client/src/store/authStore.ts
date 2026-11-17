@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { AuthUser, RegisterRole } from '@/types'
+import type { AuthUser } from '@/types'
 import { ApiError } from '@/services/api'
 import { authApi } from '@/services/authApi'
 
@@ -13,7 +13,7 @@ interface AuthState {
   bootstrap: () => Promise<void>
   login: (email: string, password: string) => Promise<void>
   loginAsGuest: () => Promise<void>
-  register: (email: string, password: string, role: RegisterRole) => Promise<void>
+  register: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   verifyEmail: (token: string) => Promise<void>
   resendVerification: (email: string) => Promise<string>
@@ -86,10 +86,10 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  register: async (email, password, role) => {
+  register: async (email, password) => {
     set({ error: null })
     try {
-      const result = await authApi.register({ email, password, role })
+      const result = await authApi.register({ email, password })
       set({
         user: null,
         status: 'anonymous',

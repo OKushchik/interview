@@ -146,9 +146,7 @@ export const AVAILABLE_SKILLS = [
   'Next.js', 'Tailwind CSS', 'Git', 'CI/CD', 'REST API',
 ]
 
-export type UserRole = 'admin' | 'candidate' | 'recruiter'
-
-export type RegisterRole = Extract<UserRole, 'candidate' | 'recruiter'>
+export type UserRole = 'super_admin' | 'company_admin' | 'user'
 
 export interface AuthUser {
   id: string

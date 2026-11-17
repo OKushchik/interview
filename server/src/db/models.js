@@ -4,6 +4,10 @@ export class User extends Model {}
 
 export class Vacancy extends Model {}
 
+export class Company extends Model {}
+
+export class UserCompanyAccess extends Model {}
+
 export function initModels(sequelize) {
   User.init(
     {
@@ -22,9 +26,18 @@ export function initModels(sequelize) {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('admin', 'candidate', 'recruiter'),
+        type: DataTypes.ENUM('super_admin', 'company_admin', 'user'),
         allowNull: false,
-        defaultValue: 'candidate',
+        defaultValue: 'user',
+      },
+      isGuest: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      companyId: {
+        type: DataTypes.STRING,
+        allowNull: true,
       },
       emailVerified: {
         type: DataTypes.BOOLEAN,
@@ -86,6 +99,10 @@ export function initModels(sequelize) {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      companyId: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       title: {
         type: DataTypes.STRING,
         allowNull: false,
@@ -132,12 +149,92 @@ export function initModels(sequelize) {
       modelName: 'Vacancy',
       timestamps: true,
       underscored: true,
-      indexes: [{ fields: ['user_id', 'created_at'] }],
+      indexes: [
+        { fields: ['user_id', 'created_at'] },
+        { fields: ['company_id', 'created_at'] },
+      ],
+    },
+  )
+
+  Company.init(
+    {
+      id: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+        defaultValue: DataTypes.UUIDV4,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      slug: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize,
+      tableName: 'companies',
+      modelName: 'Company',
+      timestamps: true,
+      updatedAt: false,
+      underscored: true,
+    },
+  )
+
+  UserCompanyAccess.init(
+    {
+      userId: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+      },
+      companyId: {
+        type: DataTypes.STRING,
+        primaryKey: true,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW,
+      },
+    },
+    {
+      sequelize,
+      tableName: 'user_company_access',
+      modelName: 'UserCompanyAccess',
+      timestamps: true,
+      updatedAt: false,
+      underscored: true,
     },
   )
 
   User.hasMany(Vacancy, { foreignKey: 'userId', onDelete: 'CASCADE' })
   Vacancy.belongsTo(User, { foreignKey: 'userId' })
 
-  return { User, Vacancy }
+  Company.hasMany(Vacancy, { foreignKey: 'companyId', onDelete: 'CASCADE' })
+  Vacancy.belongsTo(Company, { foreignKey: 'companyId' })
+
+  Company.hasMany(User, { foreignKey: 'companyId', onDelete: 'SET NULL' })
+  User.belongsTo(Company, { foreignKey: 'companyId' })
+
+  User.belongsToMany(Company, {
+    through: UserCompanyAccess,
+    as: 'accessibleCompanies',
+    foreignKey: 'userId',
+    otherKey: 'companyId',
+  })
+  Company.belongsToMany(User, {
+    through: UserCompanyAccess,
+    as: 'usersWithAccess',
+    foreignKey: 'companyId',
+    otherKey: 'userId',
+  })
+
+  return { User, Vacancy, Company, UserCompanyAccess }
 }

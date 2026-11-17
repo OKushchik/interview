@@ -53,7 +53,7 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
         email: parsed.data.email,
         passwordHash: await hashPassword(parsed.data.password),
         emailVerified: false,
-        role: parsed.data.role,
+        role: 'user',
       })
 
       try {
@@ -108,7 +108,8 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
           email: GUEST_EMAIL,
           passwordHash: await hashPassword(randomBytes(32).toString('hex')),
           emailVerified: true,
-          role: 'candidate',
+          role: 'user',
+          isGuest: true,
         })
       }
 
@@ -227,7 +228,7 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
         return
       }
 
-      if (user.email === GUEST_EMAIL) {
+      if (user.isGuest) {
         res.status(403).json({ error: 'Guest account cannot be changed' })
         return
       }

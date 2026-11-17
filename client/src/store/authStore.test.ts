@@ -21,7 +21,7 @@ import { useAuthStore } from './authStore'
 const sampleUser = {
   id: 'u1',
   email: 'a@b.c',
-  role: 'candidate' as const,
+  role: 'user' as const,
   pendingEmail: null,
   vacancies: [],
 }
@@ -85,11 +85,10 @@ describe('authStore', () => {
       message: 'Check your email',
       email: 'a@b.c',
     })
-    await useAuthStore.getState().register('a@b.c', 'password1', 'recruiter')
+    await useAuthStore.getState().register('a@b.c', 'password1')
     expect(authApi.register).toHaveBeenCalledWith({
       email: 'a@b.c',
       password: 'password1',
-      role: 'recruiter',
     })
     expect(useAuthStore.getState()).toMatchObject({
       status: 'anonymous',
