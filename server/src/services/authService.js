@@ -26,7 +26,7 @@ export async function publicUser(db, user) {
   return {
     id: user.id,
     email: user.email,
-    role: user.role ?? 'candidate',
+    role: user.role ?? 'user',
     pendingEmail: user.pendingEmail ?? null,
     vacancies,
   }

@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Brain, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import type { RegisterRole } from '@/types'
 import { useAuthStore } from '@/store/authStore'
 
 type Mode = 'login' | 'register'
@@ -44,7 +43,6 @@ export function LoginPage() {
   const [passwordConfirm, setPasswordConfirm] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
-  const [role, setRole] = useState<RegisterRole>('candidate')
   const [submitting, setSubmitting] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
   const [resendMessage, setResendMessage] = useState<string | null>(null)
@@ -82,7 +80,7 @@ export function LoginPage() {
         await login(email.trim(), password)
         navigate('/vacancies', { replace: true })
       } else {
-        await register(email.trim(), password, role)
+        await register(email.trim(), password)
       }
     } catch {
       // error already in store
@@ -218,34 +216,6 @@ export function LoginPage() {
                 />
               }
             />
-          )}
-
-          {mode === 'register' && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-text">Роль</p>
-              <div className="flex rounded-xl bg-background/50 p-1 border border-border">
-                <button
-                  type="button"
-                  className={`flex-1 py-2 text-sm rounded-lg transition-colors ${
-                    role === 'recruiter' ? 'bg-surface text-text' : 'text-muted hover:text-text'
-                  }`}
-                  aria-pressed={role === 'recruiter'}
-                  onClick={() => setRole('recruiter')}
-                >
-                  Створення вакансій
-                </button>
-                <button
-                  type="button"
-                  className={`flex-1 py-2 text-sm rounded-lg transition-colors ${
-                    role === 'candidate' ? 'bg-surface text-text' : 'text-muted hover:text-text'
-                  }`}
-                  aria-pressed={role === 'candidate'}
-                  onClick={() => setRole('candidate')}
-                >
-                  Кандидат
-                </button>
-              </div>
-            </div>
           )}
 
           {mode === 'login' && (
