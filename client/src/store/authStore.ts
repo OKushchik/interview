@@ -1,29 +1,7 @@
 import { create } from 'zustand'
-import type { AuthUser } from '@/types'
+import type { AuthState } from '@/types'
 import { ApiError } from '@/services/api'
 import { authApi } from '@/services/authApi'
-
-export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous'
-
-interface AuthState {
-  user: AuthUser | null
-  status: AuthStatus
-  error: string | null
-  pendingVerificationEmail: string | null
-  bootstrap: () => Promise<void>
-  login: (email: string, password: string) => Promise<void>
-  loginAsGuest: () => Promise<void>
-  register: (email: string, password: string) => Promise<void>
-  logout: () => Promise<void>
-  verifyEmail: (token: string) => Promise<void>
-  resendVerification: (email: string) => Promise<string>
-  forgotPassword: (email: string) => Promise<string>
-  resetPassword: (token: string, password: string) => Promise<string>
-  changeEmail: (newEmail: string, password: string) => Promise<string>
-  verifyEmailChange: (token: string) => Promise<void>
-  clearError: () => void
-  clearPendingVerification: () => void
-}
 
 function toErrorMessage(error: unknown): string {
   if (error instanceof ApiError) return error.message

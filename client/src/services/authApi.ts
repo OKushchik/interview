@@ -1,9 +1,5 @@
-import type { AuthUser } from '@/types'
+import type { AuthCredentials, AuthUser, RegisterCredentials } from '@/types'
 import { apiRequest } from './api'
-
-export type AuthCredentials = { email: string; password: string }
-
-export type RegisterCredentials = AuthCredentials
 
 export const authApi = {
   login(credentials: AuthCredentials) {

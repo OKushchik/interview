@@ -16,7 +16,7 @@ import { Button } from '@/components/ui/Button'
 export function VacanciesPage() {
   const navigate = useNavigate()
   const user = useAuthStore((s) => s.user)
-  const canCreateVacancy = user?.role === 'super_admin' || user?.role === 'company_admin'
+  const canCreateVacancy = user?.role === 'super_admin' || user?.role === 'provider_admin'
   const { customVacancies, addCustomVacancy, startSession, setSession, setGenerating, isGenerating } =
     useInterviewStore()
 
@@ -24,7 +24,7 @@ export function VacanciesPage() {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
   const [generateError, setGenerateError] = useState<string | null>(null)
-  const allVacancies = [...MOCK_VACANCIES, ...(user?.vacancies ?? []), ...customVacancies]
+  const allVacancies = [...MOCK_VACANCIES, ...customVacancies]
 
   const handleStartInterview = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy)

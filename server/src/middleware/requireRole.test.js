@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it, mock } from 'node:test'
-import { createRequireAdmin } from './requireAdmin.js'
+import { createRequireRole } from './requireRole.js'
 
 function mockRes() {
   const res = {
@@ -18,14 +18,14 @@ function mockRes() {
   return res
 }
 
-describe('createRequireAdmin', () => {
+describe('createRequireRole', () => {
   it('calls next when user role is super_admin', async () => {
     const db = {
       User: {
         findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'super_admin' })),
       },
     }
-    const requireAdmin = createRequireAdmin(db)
+    const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
     const req = { user: { id: '1', email: 'a@b.c' } }
     const res = mockRes()
     let nextCalled = false
@@ -36,13 +36,13 @@ describe('createRequireAdmin', () => {
     assert.equal(req.user.role, 'super_admin')
   })
 
-  it('calls next when user role is company_admin', async () => {
+  it('calls next when user role is provider_admin', async () => {
     const db = {
       User: {
-        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'company_admin' })),
+        findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'provider_admin' })),
       },
     }
-    const requireAdmin = createRequireAdmin(db)
+    const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
     const req = { user: { id: '1', email: 'a@b.c' } }
     const res = mockRes()
     let nextCalled = false
@@ -50,7 +50,7 @@ describe('createRequireAdmin', () => {
       nextCalled = true
     })
     assert.equal(nextCalled, true)
-    assert.equal(req.user.role, 'company_admin')
+    assert.equal(req.user.role, 'provider_admin')
   })
 
   it('responds 403 when user role is user', async () => {
@@ -59,7 +59,7 @@ describe('createRequireAdmin', () => {
         findOne: mock.fn(async () => ({ id: '1', email: 'a@b.c', role: 'user' })),
       },
     }
-    const requireAdmin = createRequireAdmin(db)
+    const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
     const req = { user: { id: '1', email: 'a@b.c' } }
     const res = mockRes()
     let nextCalled = false
@@ -77,7 +77,7 @@ describe('createRequireAdmin', () => {
         findOne: mock.fn(async () => null),
       },
     }
-    const requireAdmin = createRequireAdmin(db)
+    const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
     const req = { user: { id: 'missing', email: 'x@y.z' } }
     const res = mockRes()
     let nextCalled = false

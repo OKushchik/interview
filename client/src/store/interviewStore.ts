@@ -1,31 +1,5 @@
 import { create } from 'zustand'
-import type {
-  Vacancy,
-  VacancyFormData,
-  InterviewConfig,
-  InterviewSession,
-  InterviewReport,
-  QuizAnswer,
-  BotAnswer,
-  CodingAnswer,
-} from '@/types'
-
-interface InterviewState {
-  customVacancies: Vacancy[]
-  currentSession: InterviewSession | null
-  report: InterviewReport | null
-  isGenerating: boolean
-
-  addCustomVacancy: (form: VacancyFormData) => Vacancy
-  startSession: (vacancy: Vacancy, config: InterviewConfig) => void
-  setSession: (session: InterviewSession) => void
-  setGenerating: (value: boolean) => void
-  saveQuizAnswer: (answer: QuizAnswer) => void
-  saveBotAnswer: (answer: BotAnswer) => void
-  saveCodingAnswer: (answer: CodingAnswer) => void
-  setReport: (report: InterviewReport) => void
-  reset: () => void
-}
+import type { InterviewState, Vacancy } from '@/types'
 
 export const useInterviewStore = create<InterviewState>((set, get) => ({
   customVacancies: [],

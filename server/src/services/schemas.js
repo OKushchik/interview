@@ -65,10 +65,50 @@ export const vacancyPatchSchema = z.object({
   codingTask: codingTaskSchema.nullable().optional(),
 })
 
+// Клієнтські маршрути живуть під префіксом /provider/<slug>/..., тому зі службовими
+// сторінками (/login, /admin, ...) slug конфліктувати не може. Лишається лише
+// 'mine': він збігався б з GET /api/providers/mine.
+export const RESERVED_SLUGS = ['mine']
+
+export const slugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9-]{2,40}$/, 'Slug must be 2-40 chars: a-z, 0-9, -')
+  .refine((value) => !RESERVED_SLUGS.includes(value), 'Slug is reserved')
+
+export const providerCreateSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  slug: slugSchema,
+})
+
+export const providerPatchSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    slug: slugSchema.optional(),
+  })
+  .refine((v) => v.name !== undefined || v.slug !== undefined, 'Nothing to update')
+
+export const userPatchSchema = z
+  .object({
+    role: z.enum(['super_admin', 'provider_admin', 'user']).optional(),
+    providerId: z.string().min(1).nullable().optional(),
+  })
+  .refine((v) => v.role !== undefined || v.providerId !== undefined, 'Nothing to update')
+
+export const accessGrantSchema = z.object({
+  userId: z.string().min(1),
+})
+
 export const prepareSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),
   enableCoding: z.boolean(),
+})
+
+export const interviewPrepareSchema = z.object({
+  vacancyId: z.string().min(1),
+  config: prepareSchema,
 })
 
 export const analyzeBotSchema = z.object({
@@ -100,6 +140,7 @@ export function normalizeVacancyFields(input) {
 export function toVacancyDto(row) {
   return {
     id: row.id,
+    providerId: row.providerId ?? null,
     title: row.title,
     level: row.level,
     skills: row.skills,

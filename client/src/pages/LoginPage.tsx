@@ -4,8 +4,7 @@ import { Brain, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { useAuthStore } from '@/store/authStore'
-
-type Mode = 'login' | 'register'
+import type { AuthMode } from '@/types'
 
 function PasswordVisibilityButton({
   visible,
@@ -37,7 +36,7 @@ export function LoginPage() {
   const pendingVerificationEmail = useAuthStore((s) => s.pendingVerificationEmail)
   const resendVerification = useAuthStore((s) => s.resendVerification)
 
-  const [mode, setMode] = useState<Mode>('login')
+  const [mode, setMode] = useState<AuthMode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirm, setPasswordConfirm] = useState('')
@@ -48,7 +47,7 @@ export function LoginPage() {
   const [resendMessage, setResendMessage] = useState<string | null>(null)
   const [resending, setResending] = useState(false)
 
-  const switchMode = (next: Mode) => {
+  const switchMode = (next: AuthMode) => {
     setMode(next)
     clearError()
     setLocalError(null)

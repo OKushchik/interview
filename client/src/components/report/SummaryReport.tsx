@@ -6,6 +6,7 @@ import type {
   QuizReportSection,
   BotReportSection,
   CodingReportSection,
+  ReportSectionKey,
 } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
@@ -16,9 +17,7 @@ interface SummaryReportProps {
   vacancyTitle: string
 }
 
-type SectionKey = 'quiz' | 'coding' | 'bot'
-
-const SECTION_LABELS: Record<SectionKey, string> = {
+const SECTION_LABELS: Record<ReportSectionKey, string> = {
   quiz: 'Тести',
   coding: 'Онлайн кодінг',
   bot: 'Відповіді боту',
@@ -150,8 +149,8 @@ export function SummaryReport({ report, vacancyTitle }: SummaryReportProps) {
   const { quiz, coding, bot } = report.sections
   const overallPercentage = percent(report.score, report.maxScore)
 
-  const availableSections = (['quiz', 'coding', 'bot'] as SectionKey[]).filter((key) => report.sections[key])
-  const [activeSection, setActiveSection] = useState<SectionKey | undefined>(availableSections[0])
+  const availableSections = (['quiz', 'coding', 'bot'] as ReportSectionKey[]).filter((key) => report.sections[key])
+  const [activeSection, setActiveSection] = useState<ReportSectionKey | undefined>(availableSections[0])
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -247,7 +246,7 @@ export function SummaryReport({ report, vacancyTitle }: SummaryReportProps) {
           <Select
             label="Оберіть частину співбесіди"
             value={activeSection}
-            onChange={(e) => setActiveSection(e.target.value as SectionKey)}
+            onChange={(e) => setActiveSection(e.target.value as ReportSectionKey)}
             options={availableSections.map((key) => ({ value: key, label: SECTION_LABELS[key] }))}
           />
           <div className="mt-6">
