@@ -2,6 +2,7 @@ import type { AuthStatus, InterviewType, SeniorityLevel, Theme, UserRole } from 
 
 export interface Vacancy {
   id: string
+  providerId?: string | null
   title: string
   level: SeniorityLevel
   skills: string[]
@@ -125,7 +126,7 @@ export interface InterviewReport {
   summary: string
 }
 
-export interface Company {
+export interface Provider {
   id: string
   name: string
   slug: string
@@ -135,10 +136,10 @@ export interface AuthUser {
   id: string
   email: string
   role: UserRole
-  companyId: string | null
+  providerId: string | null
   isGuest: boolean
   pendingEmail: string | null
-  accessibleCompanies: Company[]
+  accessibleProviders: Provider[]
 }
 
 export interface SpeechRecognitionEvent {

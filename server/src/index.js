@@ -6,7 +6,7 @@ import cookieParser from 'cookie-parser'
 import { createAuthRouter } from './routes/auth.js'
 import { createVacanciesRouter } from './routes/vacancies.js'
 import { createInterviewRouter } from './routes/interview.js'
-import { createCompaniesRouter } from './routes/companies.js'
+import { createProvidersRouter } from './routes/providers.js'
 import { createUsersRouter } from './routes/users.js'
 import { createAccessRouter } from './routes/access.js'
 const { env } = await import('./config.js')
@@ -47,9 +47,9 @@ async function main() {
       emailTokenTtlHours: env.emailTokenTtlHours,
     }),
   )
-  app.use('/api/companies', createCompaniesRouter(db, env.jwtSecret))
-  app.use('/api/companies/:slug/vacancies', createVacanciesRouter(db, env.jwtSecret, generator))
-  app.use('/api/companies/:slug/access', createAccessRouter(db, env.jwtSecret))
+  app.use('/api/providers', createProvidersRouter(db, env.jwtSecret))
+  app.use('/api/providers/:slug/vacancies', createVacanciesRouter(db, env.jwtSecret, generator))
+  app.use('/api/providers/:slug/access', createAccessRouter(db, env.jwtSecret))
   app.use('/api/users', createUsersRouter(db, env.jwtSecret))
   app.use('/api/interview', createInterviewRouter(db, env.jwtSecret, generator))
 

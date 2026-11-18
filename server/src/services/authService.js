@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs'
-import { listAccessibleCompanies } from './companyAccess.js'
+import { listAccessibleProviders } from './providerAccess.js'
 import { clearAuthCookie, setAuthCookie, signAuthToken } from '../middleware/requireAuth.js'
 
 const SALT_ROUNDS = 10
@@ -22,7 +22,7 @@ export function endSession(res, secure) {
 }
 
 export async function publicUser(db, user) {
-  const accessibleCompanies = (await listAccessibleCompanies(db, user)).map((c) => ({
+  const accessibleProviders = (await listAccessibleProviders(db, user)).map((c) => ({
     id: c.id,
     name: c.name,
     slug: c.slug,
@@ -31,9 +31,9 @@ export async function publicUser(db, user) {
     id: user.id,
     email: user.email,
     role: user.role ?? 'user',
-    companyId: user.companyId ?? null,
+    providerId: user.providerId ?? null,
     isGuest: Boolean(user.isGuest),
     pendingEmail: user.pendingEmail ?? null,
-    accessibleCompanies,
+    accessibleProviders,
   }
 }

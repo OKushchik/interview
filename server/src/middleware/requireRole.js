@@ -15,7 +15,7 @@ export function createRequireRole(db) {
           res.status(403).json({ error: 'Forbidden' })
           return
         }
-        req.user = { ...req.user, role: user.role, email: user.email, companyId: user.companyId ?? null }
+        req.user = { ...req.user, role: user.role, email: user.email, providerId: user.providerId ?? null }
         next()
       } catch (error) {
         next(error)

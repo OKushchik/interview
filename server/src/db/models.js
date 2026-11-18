@@ -4,9 +4,9 @@ export class User extends Model {}
 
 export class Vacancy extends Model {}
 
-export class Company extends Model {}
+export class Provider extends Model {}
 
-export class UserCompanyAccess extends Model {}
+export class UserProviderAccess extends Model {}
 
 export function initModels(sequelize) {
   User.init(
@@ -26,7 +26,7 @@ export function initModels(sequelize) {
         allowNull: false,
       },
       role: {
-        type: DataTypes.ENUM('super_admin', 'company_admin', 'user'),
+        type: DataTypes.ENUM('super_admin', 'provider_admin', 'user'),
         allowNull: false,
         defaultValue: 'user',
       },
@@ -35,7 +35,7 @@ export function initModels(sequelize) {
         allowNull: false,
         defaultValue: false,
       },
-      companyId: {
+      providerId: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -99,7 +99,7 @@ export function initModels(sequelize) {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      companyId: {
+      providerId: {
         type: DataTypes.STRING,
         allowNull: true,
       },
@@ -151,12 +151,12 @@ export function initModels(sequelize) {
       underscored: true,
       indexes: [
         { fields: ['user_id', 'created_at'] },
-        { fields: ['company_id', 'created_at'] },
+        { fields: ['provider_id', 'created_at'] },
       ],
     },
   )
 
-  Company.init(
+  Provider.init(
     {
       id: {
         type: DataTypes.STRING,
@@ -180,21 +180,21 @@ export function initModels(sequelize) {
     },
     {
       sequelize,
-      tableName: 'companies',
-      modelName: 'Company',
+      tableName: 'providers',
+      modelName: 'Provider',
       timestamps: true,
       updatedAt: false,
       underscored: true,
     },
   )
 
-  UserCompanyAccess.init(
+  UserProviderAccess.init(
     {
       userId: {
         type: DataTypes.STRING,
         primaryKey: true,
       },
-      companyId: {
+      providerId: {
         type: DataTypes.STRING,
         primaryKey: true,
       },
@@ -206,8 +206,8 @@ export function initModels(sequelize) {
     },
     {
       sequelize,
-      tableName: 'user_company_access',
-      modelName: 'UserCompanyAccess',
+      tableName: 'user_provider_access',
+      modelName: 'UserProviderAccess',
       timestamps: true,
       updatedAt: false,
       underscored: true,
@@ -217,24 +217,24 @@ export function initModels(sequelize) {
   User.hasMany(Vacancy, { foreignKey: 'userId', onDelete: 'CASCADE' })
   Vacancy.belongsTo(User, { foreignKey: 'userId' })
 
-  Company.hasMany(Vacancy, { foreignKey: 'companyId', onDelete: 'CASCADE' })
-  Vacancy.belongsTo(Company, { foreignKey: 'companyId' })
+  Provider.hasMany(Vacancy, { foreignKey: 'providerId', onDelete: 'CASCADE' })
+  Vacancy.belongsTo(Provider, { foreignKey: 'providerId' })
 
-  Company.hasMany(User, { foreignKey: 'companyId', onDelete: 'SET NULL' })
-  User.belongsTo(Company, { foreignKey: 'companyId' })
+  Provider.hasMany(User, { foreignKey: 'providerId', onDelete: 'SET NULL' })
+  User.belongsTo(Provider, { foreignKey: 'providerId' })
 
-  User.belongsToMany(Company, {
-    through: UserCompanyAccess,
-    as: 'accessibleCompanies',
+  User.belongsToMany(Provider, {
+    through: UserProviderAccess,
+    as: 'accessibleProviders',
     foreignKey: 'userId',
-    otherKey: 'companyId',
+    otherKey: 'providerId',
   })
-  Company.belongsToMany(User, {
-    through: UserCompanyAccess,
+  Provider.belongsToMany(User, {
+    through: UserProviderAccess,
     as: 'usersWithAccess',
-    foreignKey: 'companyId',
+    foreignKey: 'providerId',
     otherKey: 'userId',
   })
 
-  return { User, Vacancy, Company, UserCompanyAccess }
+  return { User, Vacancy, Provider, UserProviderAccess }
 }

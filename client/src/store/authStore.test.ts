@@ -23,8 +23,8 @@ const sampleUser = {
   email: 'a@b.c',
   role: 'user' as const,
   pendingEmail: null,
-  accessibleCompanies: [],
-  companyId: null,
+  accessibleProviders: [],
+  providerId: null,
   isGuest: false,
 }
 

@@ -1,22 +1,22 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
-import { companyCreateSchema, companyPatchSchema } from '../services/schemas.js'
+import { providerCreateSchema, providerPatchSchema } from '../services/schemas.js'
 import {
-  createCompany,
-  deleteCompany,
-  listCompanies,
-  toCompanyDto,
-  updateCompany,
-} from '../services/companyService.js'
-import { listAccessibleCompanies } from '../services/companyAccess.js'
+  createProvider,
+  deleteProvider,
+  listProviders,
+  toProviderDto,
+  updateProvider,
+} from '../services/providerService.js'
+import { listAccessibleProviders } from '../services/providerAccess.js'
 
 function badRequest(res, parsed) {
   res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
 }
 
-/** /api/companies: CRUD для super_admin і GET /mine для select. */
-export function createCompaniesRouter(db, jwtSecret) {
+/** /api/providers: CRUD для super_admin і GET /mine для select. */
+export function createProvidersRouter(db, jwtSecret) {
   const router = Router()
   const requireSuperAdmin = createRequireRole(db)('super_admin')
 
@@ -29,8 +29,8 @@ export function createCompaniesRouter(db, jwtSecret) {
         res.status(401).json({ error: 'Unauthorized' })
         return
       }
-      const companies = await listAccessibleCompanies(db, user)
-      res.json({ companies: companies.map(toCompanyDto) })
+      const providers = await listAccessibleProviders(db, user)
+      res.json({ providers: providers.map(toProviderDto) })
     } catch (error) {
       next(error)
     }
@@ -38,7 +38,7 @@ export function createCompaniesRouter(db, jwtSecret) {
 
   router.get('/', requireSuperAdmin, async (_req, res, next) => {
     try {
-      res.json({ companies: await listCompanies(db) })
+      res.json({ providers: await listProviders(db) })
     } catch (error) {
       next(error)
     }
@@ -46,9 +46,9 @@ export function createCompaniesRouter(db, jwtSecret) {
 
   router.post('/', requireSuperAdmin, async (req, res, next) => {
     try {
-      const parsed = companyCreateSchema.safeParse(req.body)
+      const parsed = providerCreateSchema.safeParse(req.body)
       if (!parsed.success) return badRequest(res, parsed)
-      res.status(201).json({ company: await createCompany(db, parsed.data) })
+      res.status(201).json({ provider: await createProvider(db, parsed.data) })
     } catch (error) {
       next(error)
     }
@@ -56,12 +56,12 @@ export function createCompaniesRouter(db, jwtSecret) {
 
   router.get('/:slug', requireSuperAdmin, async (req, res, next) => {
     try {
-      const company = await db.Company.findOne({ where: { slug: req.params.slug } })
-      if (!company) {
-        res.status(404).json({ error: 'Company not found' })
+      const provider = await db.Provider.findOne({ where: { slug: req.params.slug } })
+      if (!provider) {
+        res.status(404).json({ error: 'Provider not found' })
         return
       }
-      res.json({ company: toCompanyDto(company) })
+      res.json({ provider: toProviderDto(provider) })
     } catch (error) {
       next(error)
     }
@@ -69,14 +69,14 @@ export function createCompaniesRouter(db, jwtSecret) {
 
   router.patch('/:slug', requireSuperAdmin, async (req, res, next) => {
     try {
-      const parsed = companyPatchSchema.safeParse(req.body)
+      const parsed = providerPatchSchema.safeParse(req.body)
       if (!parsed.success) return badRequest(res, parsed)
-      const company = await db.Company.findOne({ where: { slug: req.params.slug } })
-      if (!company) {
-        res.status(404).json({ error: 'Company not found' })
+      const provider = await db.Provider.findOne({ where: { slug: req.params.slug } })
+      if (!provider) {
+        res.status(404).json({ error: 'Provider not found' })
         return
       }
-      res.json({ company: await updateCompany(db, company, parsed.data) })
+      res.json({ provider: await updateProvider(db, provider, parsed.data) })
     } catch (error) {
       next(error)
     }
@@ -84,12 +84,12 @@ export function createCompaniesRouter(db, jwtSecret) {
 
   router.delete('/:slug', requireSuperAdmin, async (req, res, next) => {
     try {
-      const company = await db.Company.findOne({ where: { slug: req.params.slug } })
-      if (!company) {
-        res.status(404).json({ error: 'Company not found' })
+      const provider = await db.Provider.findOne({ where: { slug: req.params.slug } })
+      if (!provider) {
+        res.status(404).json({ error: 'Provider not found' })
         return
       }
-      await deleteCompany(db, company)
+      await deleteProvider(db, provider)
       res.status(204).end()
     } catch (error) {
       next(error)

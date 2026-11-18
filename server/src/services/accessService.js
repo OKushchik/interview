@@ -1,7 +1,7 @@
 import { HttpError } from '../lib/httpError.js'
 
-export async function listCompanyAccess(db, company) {
-  const rows = await db.UserCompanyAccess.findAll({ where: { companyId: company.id } })
+export async function listProviderAccess(db, provider) {
+  const rows = await db.UserProviderAccess.findAll({ where: { providerId: provider.id } })
   if (rows.length === 0) return []
   const users = await db.User.findAll({ where: { id: rows.map((r) => r.userId) } })
   const byId = new Map(users.map((u) => [u.id, u]))
@@ -15,21 +15,21 @@ export async function listCompanyAccess(db, company) {
 }
 
 /** Видає доступ (ідемпотентно). Повертає true, якщо запис створено. */
-export async function grantAccess(db, company, userId) {
+export async function grantAccess(db, provider, userId) {
   const user = await db.User.findOne({ where: { id: userId } })
   if (!user) throw new HttpError(404, 'User not found')
   if (user.role !== 'user' || user.isGuest) {
     throw new HttpError(400, 'Access can be granted only to regular users')
   }
-  const existing = await db.UserCompanyAccess.findOne({ where: { userId, companyId: company.id } })
+  const existing = await db.UserProviderAccess.findOne({ where: { userId, providerId: provider.id } })
   if (existing) return false
-  await db.UserCompanyAccess.create({ userId, companyId: company.id })
+  await db.UserProviderAccess.create({ userId, providerId: provider.id })
   return true
 }
 
-export async function revokeAccess(db, company, userId) {
-  const existing = await db.UserCompanyAccess.findOne({ where: { userId, companyId: company.id } })
+export async function revokeAccess(db, provider, userId) {
+  const existing = await db.UserProviderAccess.findOne({ where: { userId, providerId: provider.id } })
   if (!existing) return false
-  await db.UserCompanyAccess.destroy({ where: { userId, companyId: company.id } })
+  await db.UserProviderAccess.destroy({ where: { userId, providerId: provider.id } })
   return true
 }

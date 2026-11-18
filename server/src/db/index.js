@@ -10,7 +10,7 @@ export const sequelize = new Sequelize(env.databaseUrl, {
   },
 })
 
-const { User, Vacancy, Company, UserCompanyAccess } = initModels(sequelize)
+const { User, Vacancy, Provider, UserProviderAccess } = initModels(sequelize)
 
 function toUserRow(row) {
   const user = row.get({ plain: true })
@@ -54,45 +54,45 @@ export const db = {
       return toUserRow(rows[0])
     },
   },
-  Company: {
+  Provider: {
     async findOne({ where }) {
-      const row = await Company.findOne({ where })
+      const row = await Provider.findOne({ where })
       return row ? row.get({ plain: true }) : null
     },
     async findAll({ where, order } = {}) {
-      const rows = await Company.findAll({ where, order })
+      const rows = await Provider.findAll({ where, order })
       return rows.map((row) => row.get({ plain: true }))
     },
     async create(values) {
-      const row = await Company.create(values)
+      const row = await Provider.create(values)
       return row.get({ plain: true })
     },
     async update(values, { where }) {
-      const [count, rows] = await Company.update(values, { where, returning: true })
+      const [count, rows] = await Provider.update(values, { where, returning: true })
       if (count === 0 || !rows[0]) {
-        throw new Error('Company not found')
+        throw new Error('Provider not found')
       }
       return rows[0].get({ plain: true })
     },
     async destroy({ where }) {
-      return Company.destroy({ where })
+      return Provider.destroy({ where })
     },
   },
-  UserCompanyAccess: {
+  UserProviderAccess: {
     async findOne({ where }) {
-      const row = await UserCompanyAccess.findOne({ where })
+      const row = await UserProviderAccess.findOne({ where })
       return row ? row.get({ plain: true }) : null
     },
     async findAll({ where } = {}) {
-      const rows = await UserCompanyAccess.findAll({ where })
+      const rows = await UserProviderAccess.findAll({ where })
       return rows.map((row) => row.get({ plain: true }))
     },
     async create(values) {
-      const row = await UserCompanyAccess.create(values)
+      const row = await UserProviderAccess.create(values)
       return row.get({ plain: true })
     },
     async destroy({ where }) {
-      return UserCompanyAccess.destroy({ where })
+      return UserProviderAccess.destroy({ where })
     },
   },
   Vacancy: {
@@ -105,7 +105,7 @@ export const db = {
         where: {
           id: where.id,
           ...(where.userId ? { userId: where.userId } : {}),
-          ...(where.companyId ? { companyId: where.companyId } : {}),
+          ...(where.providerId ? { providerId: where.providerId } : {}),
         },
       })
       return row ? toVacancyRow(row) : null

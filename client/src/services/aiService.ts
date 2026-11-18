@@ -5,9 +5,12 @@ export async function generateQuestions(
   vacancy: Vacancy,
   config: InterviewConfig,
 ): Promise<Pick<InterviewSession, 'quizQuestions' | 'botQuestions' | 'codingTask'>> {
+  // Вакансія провайдера (є providerId) готується на сервері за id;
+  // без провайдера передаємо замоковану вакансію.
+  const body = vacancy.providerId ? { vacancyId: vacancy.id, config } : { vacancy, config }
   const data = await apiRequest<PrepareResponse>('/api/interview/prepare', {
     method: 'POST',
-    body: JSON.stringify({ vacancy, config }),
+    body: JSON.stringify(body),
   })
 
   return {

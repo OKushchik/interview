@@ -5,7 +5,7 @@ export function toUserDto(row) {
     id: row.id,
     email: row.email,
     role: row.role,
-    companyId: row.companyId ?? null,
+    providerId: row.providerId ?? null,
     isGuest: Boolean(row.isGuest),
     emailVerified: Boolean(row.emailVerified),
     createdAt: row.createdAt,
@@ -28,18 +28,18 @@ export async function updateUser(db, actorId, targetId, input) {
     throw new HttpError(400, 'You cannot change your own role')
   }
 
-  let companyId = input.companyId !== undefined ? input.companyId : target.companyId
-  if (role !== 'company_admin') {
-    companyId = null
-  } else if (!companyId) {
-    throw new HttpError(400, 'company_admin requires companyId')
+  let providerId = input.providerId !== undefined ? input.providerId : target.providerId
+  if (role !== 'provider_admin') {
+    providerId = null
+  } else if (!providerId) {
+    throw new HttpError(400, 'provider_admin requires providerId')
   }
 
-  if (companyId) {
-    const company = await db.Company.findOne({ where: { id: companyId } })
-    if (!company) throw new HttpError(404, 'Company not found')
+  if (providerId) {
+    const provider = await db.Provider.findOne({ where: { id: providerId } })
+    if (!provider) throw new HttpError(404, 'Provider not found')
   }
 
-  const updated = await db.User.update({ role, companyId }, { where: { id: target.id } })
+  const updated = await db.User.update({ role, providerId }, { where: { id: target.id } })
   return toUserDto(updated)
 }

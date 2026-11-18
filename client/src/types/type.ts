@@ -4,7 +4,7 @@ export type SeniorityLevel = 'junior' | 'middle' | 'senior'
 
 export type InterviewType = 'quiz' | 'bot'
 
-export type UserRole = 'super_admin' | 'company_admin' | 'user'
+export type UserRole = 'super_admin' | 'provider_admin' | 'user'
 
 export type ReportSectionKey = 'quiz' | 'coding' | 'bot'
 
