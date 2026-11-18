@@ -23,7 +23,9 @@ const sampleUser = {
   email: 'a@b.c',
   role: 'user' as const,
   pendingEmail: null,
-  vacancies: [],
+  accessibleCompanies: [],
+  companyId: null,
+  isGuest: false,
 }
 
 describe('authStore', () => {

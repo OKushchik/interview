@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
-import { createRequireAdmin } from '../middleware/requireAdmin.js'
+import { createRequireRole } from '../middleware/requireRole.js'
 import { prepareSchema, vacancyCreateSchema, vacancyPatchSchema } from '../services/schemas.js'
 import {
   createVacancy,
@@ -14,7 +14,7 @@ import { prepareInterview } from '../services/prepareInterview.js'
 export function createVacanciesRouter(db, jwtSecret, generator) {
   const router = Router()
   const requireAuth = createRequireAuth(jwtSecret)
-  const requireAdmin = createRequireAdmin(db)
+  const requireAdmin = createRequireRole(db)('super_admin', 'company_admin')
 
   router.use(requireAuth)
 

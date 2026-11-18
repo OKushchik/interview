@@ -7,7 +7,7 @@
     "dev": "node --watch src/index.js",
     "start": "node src/index.js",
     "db:migrate": "sequelize-cli db:migrate",
-    "test": "node --test src/middleware/requireAdmin.test.js src/services/vacancyService.test.js src/services/tokenService.test.js src/services/mailService.test.js src/services/emailAuthService.test.js",
+    "test": "node --test src/middleware/requireRole.test.js src/middleware/requireCompanyAccess.test.js src/services/vacancyService.test.js src/services/tokenService.test.js src/services/mailService.test.js src/services/emailAuthService.test.js",
     "predev": "npm run db:migrate",
     "prestart": "npm run db:migrate",
     "db:migrate:undo": "sequelize-cli db:migrate:undo"

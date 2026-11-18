@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/authStore'
 export function AccountPage() {
   const user = useAuthStore((s) => s.user)
   const changeEmail = useAuthStore((s) => s.changeEmail)
-  const isGuest = user?.email === 'guest@guest.local'
+  const isGuest = Boolean(user?.isGuest)
 
   const [newEmail, setNewEmail] = useState('')
   const [password, setPassword] = useState('')

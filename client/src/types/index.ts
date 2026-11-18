@@ -146,14 +146,22 @@ export const AVAILABLE_SKILLS = [
   'Next.js', 'Tailwind CSS', 'Git', 'CI/CD', 'REST API',
 ]
 
+export interface Company {
+  id: string
+  name: string
+  slug: string
+}
+
 export type UserRole = 'super_admin' | 'company_admin' | 'user'
 
 export interface AuthUser {
   id: string
   email: string
   role: UserRole
+  companyId: string | null
+  isGuest: boolean
   pendingEmail: string | null
-  vacancies: Vacancy[]
+  accessibleCompanies: Company[]
 }
 
 

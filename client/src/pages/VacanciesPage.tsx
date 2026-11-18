@@ -24,7 +24,7 @@ export function VacanciesPage() {
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
   const [generateError, setGenerateError] = useState<string | null>(null)
-  const allVacancies = [...MOCK_VACANCIES, ...(user?.vacancies ?? []), ...customVacancies]
+  const allVacancies = [...MOCK_VACANCIES, ...customVacancies]
 
   const handleStartInterview = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy)

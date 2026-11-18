@@ -10,7 +10,7 @@ export const sequelize = new Sequelize(env.databaseUrl, {
   },
 })
 
-const { User, Vacancy } = initModels(sequelize)
+const { User, Vacancy, Company, UserCompanyAccess } = initModels(sequelize)
 
 function toUserRow(row) {
   const user = row.get({ plain: true })
@@ -48,6 +48,26 @@ export const db = {
         throw new Error('User not found')
       }
       return toUserRow(rows[0])
+    },
+  },
+  Company: {
+    async findOne({ where }) {
+      const row = await Company.findOne({ where })
+      return row ? row.get({ plain: true }) : null
+    },
+    async findAll({ where, order } = {}) {
+      const rows = await Company.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+  },
+  UserCompanyAccess: {
+    async findOne({ where }) {
+      const row = await UserCompanyAccess.findOne({ where })
+      return row ? row.get({ plain: true }) : null
+    },
+    async findAll({ where } = {}) {
+      const rows = await UserCompanyAccess.findAll({ where })
+      return rows.map((row) => row.get({ plain: true }))
     },
   },
   Vacancy: {
