@@ -1,7 +1,9 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
-import { analyzeBotSchema, prepareSchema } from '../services/schemas.js'
+import { analyzeBotSchema, interviewPrepareSchema } from '../services/schemas.js'
 import { prepareInterview } from '../services/prepareInterview.js'
+import { getVacancy } from '../services/vacancyService.js'
+import { canAccessCompany } from '../services/companyAccess.js'
 import { z } from 'zod'
 
 const vacancyBodySchema = z.object({
@@ -11,11 +13,6 @@ const vacancyBodySchema = z.object({
   skills: z.array(z.string()),
   description: z.string(),
 }).passthrough()
-
-const prepareBodySchema = z.object({
-  vacancy: vacancyBodySchema,
-  config: prepareSchema,
-})
 
 const reportSchema = z.object({
   vacancy: vacancyBodySchema,
@@ -32,18 +29,38 @@ const reportSchema = z.object({
   codingAnswer: z.any().optional(),
 })
 
-export function createInterviewRouter(jwtSecret, generator) {
+export function createInterviewRouter(db, jwtSecret, generator) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))
 
   router.post('/prepare', async (req, res, next) => {
     try {
-      const parsed = prepareBodySchema.safeParse(req.body)
+      const parsed = interviewPrepareSchema.safeParse(req.body)
       if (!parsed.success) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const { vacancy, config } = parsed.data
+      const { vacancyId, config } = parsed.data
+
+      // Вакансія береться з БД, а доступ перевіряється до її компанії.
+      const vacancy = await getVacancy(db, vacancyId)
+      if (!vacancy) {
+        res.status(404).json({ error: 'Vacancy not found' })
+        return
+      }
+      const [user, company] = await Promise.all([
+        db.User.findOne({ where: { id: req.user.id } }),
+        db.Company.findOne({ where: { id: vacancy.companyId } }),
+      ])
+      if (!user) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+      if (!company || !(await canAccessCompany(db, user, company))) {
+        res.status(403).json({ error: 'Forbidden' })
+        return
+      }
+
       const prepared = await prepareInterview(vacancy, config, generator)
       res.json({
         vacancy,

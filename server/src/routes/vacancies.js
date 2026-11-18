@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
+import { createRequireCompanyAccess } from '../middleware/requireCompanyAccess.js'
 import { prepareSchema, vacancyCreateSchema, vacancyPatchSchema } from '../services/schemas.js'
 import {
   createVacancy,
@@ -11,16 +12,21 @@ import {
 } from '../services/vacancyService.js'
 import { prepareInterview } from '../services/prepareInterview.js'
 
+/**
+ * /api/companies/:slug/vacancies
+ * Усі ендпоінти проходять requireCompanyAccess; company_id береться з req.company,
+ * а не з тіла запиту. Запис доступний лише super_admin і company_admin.
+ */
 export function createVacanciesRouter(db, jwtSecret, generator) {
-  const router = Router()
-  const requireAuth = createRequireAuth(jwtSecret)
+  const router = Router({ mergeParams: true })
   const requireAdmin = createRequireRole(db)('super_admin', 'company_admin')
 
-  router.use(requireAuth)
+  router.use(createRequireAuth(jwtSecret))
+  router.use(createRequireCompanyAccess(db))
 
   router.get('/', async (req, res, next) => {
     try {
-      const vacancies = await listVacancies(db)
+      const vacancies = await listVacancies(db, req.company.id)
       res.json({ vacancies })
     } catch (error) {
       next(error)
@@ -34,7 +40,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await createVacancy(db, req.user.id, parsed.data)
+      const vacancy = await createVacancy(db, req.user.id, req.company.id, parsed.data)
       res.status(201).json({ vacancy })
     } catch (error) {
       next(error)
@@ -43,7 +49,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
 
   router.get('/:id', async (req, res, next) => {
     try {
-      const vacancy = await getVacancy(db, req.params.id)
+      const vacancy = await getVacancy(db, req.params.id, req.company.id)
       if (!vacancy) {
         res.status(404).json({ error: 'Vacancy not found' })
         return
@@ -61,7 +67,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await patchVacancy(db, req.params.id, parsed.data)
+      const vacancy = await patchVacancy(db, req.params.id, req.company.id, parsed.data)
       if (!vacancy) {
         res.status(404).json({ error: 'Vacancy not found' })
         return
@@ -74,7 +80,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
 
   router.delete('/:id', requireAdmin, async (req, res, next) => {
     try {
-      const deleted = await deleteVacancy(db, req.params.id)
+      const deleted = await deleteVacancy(db, req.params.id, req.company.id)
       if (!deleted) {
         res.status(404).json({ error: 'Vacancy not found' })
         return
@@ -93,7 +99,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         return
       }
 
-      const vacancy = await getVacancy(db, req.params.id)
+      const vacancy = await getVacancy(db, req.params.id, req.company.id)
       if (!vacancy) {
         res.status(404).json({ error: 'Vacancy not found' })
         return

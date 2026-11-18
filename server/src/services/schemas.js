@@ -65,10 +65,51 @@ export const vacancyPatchSchema = z.object({
   codingTask: codingTaskSchema.nullable().optional(),
 })
 
+export const RESERVED_SLUGS = [
+  'login', 'register', 'admin', 'account', 'api', 'forgot-password', 'reset-password',
+  'verify-email', 'verify-email-change', 'vacancies', 'interview', 'report', 'access',
+  'companies', 'users', 'mine', 'health', 'assets', 'static', 'public',
+]
+
+export const slugSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9-]{2,40}$/, 'Slug must be 2-40 chars: a-z, 0-9, -')
+  .refine((value) => !RESERVED_SLUGS.includes(value), 'Slug is reserved')
+
+export const companyCreateSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  slug: slugSchema,
+})
+
+export const companyPatchSchema = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    slug: slugSchema.optional(),
+  })
+  .refine((v) => v.name !== undefined || v.slug !== undefined, 'Nothing to update')
+
+export const userPatchSchema = z
+  .object({
+    role: z.enum(['super_admin', 'company_admin', 'user']).optional(),
+    companyId: z.string().min(1).nullable().optional(),
+  })
+  .refine((v) => v.role !== undefined || v.companyId !== undefined, 'Nothing to update')
+
+export const accessGrantSchema = z.object({
+  userId: z.string().min(1),
+})
+
 export const prepareSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),
   enableCoding: z.boolean(),
+})
+
+export const interviewPrepareSchema = z.object({
+  vacancyId: z.string().min(1),
+  config: prepareSchema,
 })
 
 export const analyzeBotSchema = z.object({
@@ -100,6 +141,7 @@ export function normalizeVacancyFields(input) {
 export function toVacancyDto(row) {
   return {
     id: row.id,
+    companyId: row.companyId ?? null,
     title: row.title,
     level: row.level,
     skills: row.skills,

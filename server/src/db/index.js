@@ -38,6 +38,10 @@ export const db = {
       const row = await User.findOne({ where })
       return row ? toUserRow(row) : null
     },
+    async findAll({ where, order } = {}) {
+      const rows = await User.findAll({ where, order })
+      return rows.map(toUserRow)
+    },
     async create(values) {
       const row = await User.create(values)
       return toUserRow(row)
@@ -59,6 +63,20 @@ export const db = {
       const rows = await Company.findAll({ where, order })
       return rows.map((row) => row.get({ plain: true }))
     },
+    async create(values) {
+      const row = await Company.create(values)
+      return row.get({ plain: true })
+    },
+    async update(values, { where }) {
+      const [count, rows] = await Company.update(values, { where, returning: true })
+      if (count === 0 || !rows[0]) {
+        throw new Error('Company not found')
+      }
+      return rows[0].get({ plain: true })
+    },
+    async destroy({ where }) {
+      return Company.destroy({ where })
+    },
   },
   UserCompanyAccess: {
     async findOne({ where }) {
@@ -68,6 +86,13 @@ export const db = {
     async findAll({ where } = {}) {
       const rows = await UserCompanyAccess.findAll({ where })
       return rows.map((row) => row.get({ plain: true }))
+    },
+    async create(values) {
+      const row = await UserCompanyAccess.create(values)
+      return row.get({ plain: true })
+    },
+    async destroy({ where }) {
+      return UserCompanyAccess.destroy({ where })
     },
   },
   Vacancy: {
@@ -80,6 +105,7 @@ export const db = {
         where: {
           id: where.id,
           ...(where.userId ? { userId: where.userId } : {}),
+          ...(where.companyId ? { companyId: where.companyId } : {}),
         },
       })
       return row ? toVacancyRow(row) : null

@@ -17,26 +17,26 @@ const sampleRow = {
 }
 
 describe('listVacancies', () => {
-  it('loads all vacancies without userId filter', async () => {
+  it('loads vacancies only of the given company', async () => {
     const findAll = mock.fn(async ({ where }) => {
-      assert.deepEqual(where, {})
+      assert.deepEqual(where, { companyId: 'c1' })
       return [sampleRow]
     })
     const db = { Vacancy: { findAll } }
-    const result = await listVacancies(db)
+    const result = await listVacancies(db, 'c1')
     assert.equal(result.length, 1)
     assert.equal(result[0].id, 'v1')
   })
 })
 
 describe('getVacancy', () => {
-  it('finds by id only', async () => {
+  it('finds by id and company', async () => {
     const findOne = mock.fn(async ({ where }) => {
-      assert.deepEqual(where, { id: 'v1' })
+      assert.deepEqual(where, { id: 'v1', companyId: 'c1' })
       return sampleRow
     })
     const db = { Vacancy: { findOne } }
-    const vacancy = await getVacancy(db, 'v1')
+    const vacancy = await getVacancy(db, 'v1', 'c1')
     assert.equal(vacancy.id, 'v1')
   })
 
