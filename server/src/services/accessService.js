@@ -15,15 +15,17 @@ export async function listProviderAccess(db, provider) {
 }
 
 /** Видає доступ (ідемпотентно). Повертає true, якщо запис створено. */
-export async function grantAccess(db, provider, userId) {
-  const user = await db.User.findOne({ where: { id: userId } })
+export async function grantAccess(db, provider, target) {
+  const user = await db.User.findOne({
+    where: 'userId' in target ? { id: target.userId } : { email: target.email },
+  })
   if (!user) throw new HttpError(404, 'User not found')
   if (user.role !== 'user' || user.isGuest) {
     throw new HttpError(400, 'Access can be granted only to regular users')
   }
-  const existing = await db.UserProviderAccess.findOne({ where: { userId, providerId: provider.id } })
+  const existing = await db.UserProviderAccess.findOne({ where: { userId: user.id, providerId: provider.id } })
   if (existing) return false
-  await db.UserProviderAccess.create({ userId, providerId: provider.id })
+  await db.UserProviderAccess.create({ userId: user.id, providerId: provider.id })
   return true
 }
 

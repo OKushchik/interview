@@ -1,16 +1,20 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useInterviewStore } from '@/store/interviewStore'
+import { useVacanciesPath } from '@/hooks/useVacanciesPath'
 import { generateReport } from '@/services/aiService'
 import { Header } from '@/components/layout/Header'
 import { QuizInterview } from '@/components/interview/QuizInterview'
 import { BotInterview } from '@/components/interview/BotInterview'
 import { CodingSection } from '@/components/interview/CodingSection'
 import type { InterviewPhase } from '@/types'
+import { providerPath } from '@/utils/paths'
 
 export function InterviewPage() {
   const navigate = useNavigate()
+  const { slug } = useParams()
+  const backPath = useVacanciesPath()
   const {
     currentSession,
     saveQuizAnswer,
@@ -25,7 +29,7 @@ export function InterviewPage() {
   const [codingCode, setCodingCode] = useState('')
 
   if (!currentSession) {
-    navigate('/vacancies')
+    navigate(slug ? providerPath(slug, 'vacancies') : backPath)
     return null
   }
 

@@ -76,7 +76,7 @@ describe('multitenant API', () => {
 
   before(async () => {
     const mk = async (key, role, providerId = null, extra = {}) => {
-      const u = await db.User.create({ email: `${key}@x.io`, role, providerId, isGuest: false, ...extra })
+      const u = await db.User.create({ email: `${key.toLowerCase()}@x.io`, role, providerId, isGuest: false, ...extra })
       cookies[key] = signAuthToken(u, SECRET)
       return u
     }
@@ -223,6 +223,14 @@ describe('multitenant API', () => {
       assert.equal((await call('userA', 'GET', '/api/providers/acme/access')).status, 403)
       const res = await call('root', 'POST', '/api/providers/beta/access', { userId: ids.userA.id })
       assert.equal(res.status, 201)
+    })
+
+    it('grants access by email', async () => {
+      const grant = await call('adminA', 'POST', '/api/providers/acme/access', { email: 'USERNONE@x.io' })
+      assert.equal(grant.status, 201)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 200)
+      assert.equal((await call('adminA', 'POST', '/api/providers/acme/access', { email: 'nobody@x.io' })).status, 404)
+      await call('adminA', 'DELETE', `/api/providers/acme/access/${ids.userNone.id}`)
     })
 
     it('access cannot be granted to admins or guests', async () => {

@@ -1,24 +1,10 @@
 import { create } from 'zustand'
-import type { InterviewState, Vacancy } from '@/types'
+import type { InterviewState } from '@/types'
 
 export const useInterviewStore = create<InterviewState>((set, get) => ({
-  customVacancies: [],
   currentSession: null,
   report: null,
   isGenerating: false,
-
-  addCustomVacancy: (form) => {
-    const vacancy: Vacancy = {
-      id: `custom-${Date.now()}`,
-      title: form.title,
-      level: form.level,
-      skills: form.skills,
-      description: `Кастомна вакансія: ${form.title} (${form.level})`,
-      isCustom: true,
-    }
-    set((state) => ({ customVacancies: [...state.customVacancies, vacancy] }))
-    return vacancy
-  },
 
   startSession: (vacancy, config) => {
     set({

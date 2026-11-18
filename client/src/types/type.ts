@@ -25,3 +25,6 @@ export type RegisterCredentials = AuthCredentials
 export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous'
 
 export type Theme = 'dark' | 'light'
+
+/** Кому видати доступ: за id (зі списку) або за email. */
+export type AccessGrant = { userId: string } | { email: string }

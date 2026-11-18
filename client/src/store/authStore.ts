@@ -18,6 +18,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   clearError: () => set({ error: null }),
   clearPendingVerification: () => set({ pendingVerificationEmail: null }),
 
+  refreshUser: async () => {
+    try {
+      const { user } = await authApi.me()
+      set({ user })
+    } catch {
+      // залишаємо поточного користувача: сесію перевіряє bootstrap
+    }
+  },
+
   bootstrap: async () => {
     set({ status: 'loading', error: null })
     try {

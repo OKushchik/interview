@@ -7,16 +7,18 @@ export interface Vacancy {
   level: SeniorityLevel
   skills: string[]
   description: string
-  isCustom?: boolean
   quizQuestions?: QuizQuestion[] | null
   botQuestions?: BotQuestion[] | null
   codingTask?: CodingTask | null
+  /** Збережена конфігурація співбесіди; null — користувач налаштовує сам. */
+  interviewConfig?: InterviewConfig | null
 }
 
 export interface VacancyFormData {
   title: string
   level: SeniorityLevel
   skills: string[]
+  interviewConfig?: InterviewConfig | null
 }
 
 export interface InterviewConfig {
@@ -182,15 +184,15 @@ export interface AuthState {
   verifyEmailChange: (token: string) => Promise<void>
   clearError: () => void
   clearPendingVerification: () => void
+  /** Оновлює користувача (наприклад, accessibleProviders) без показу завантаження. */
+  refreshUser: () => Promise<void>
 }
 
 export interface InterviewState {
-  customVacancies: Vacancy[]
   currentSession: InterviewSession | null
   report: InterviewReport | null
   isGenerating: boolean
 
-  addCustomVacancy: (form: VacancyFormData) => Vacancy
   startSession: (vacancy: Vacancy, config: InterviewConfig) => void
   setSession: (session: InterviewSession) => void
   setGenerating: (value: boolean) => void
@@ -199,6 +201,33 @@ export interface InterviewState {
   saveCodingAnswer: (answer: CodingAnswer) => void
   setReport: (report: InterviewReport) => void
   reset: () => void
+}
+
+export interface ProviderFormData {
+  name: string
+  slug: string
+}
+
+/** Користувач у списку super_admin (GET /api/users). */
+export interface AdminUser {
+  id: string
+  email: string
+  role: UserRole
+  providerId: string | null
+  isGuest: boolean
+  emailVerified: boolean
+  createdAt: string
+}
+
+export interface UserPatch {
+  role?: UserRole
+  providerId?: string | null
+}
+
+export interface AccessEntry {
+  userId: string
+  email: string
+  createdAt: string
 }
 
 export interface ThemeState {

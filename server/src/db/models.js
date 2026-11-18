@@ -132,6 +132,10 @@ export function initModels(sequelize) {
         type: DataTypes.JSONB,
         allowNull: true,
       },
+      interviewConfig: {
+        type: DataTypes.JSONB,
+        allowNull: true,
+      },
       createdAt: {
         type: DataTypes.DATE,
         allowNull: false,

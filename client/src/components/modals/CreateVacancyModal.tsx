@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import type { VacancyFormData, SeniorityLevel } from '@/types'
+import { useEffect, useState } from 'react'
+import type { VacancyFormData, SeniorityLevel, InterviewConfig } from '@/types'
+import { DEFAULT_INTERVIEW_CONFIG, InterviewConfigFields } from './InterviewConfigFields'
 import { AVAILABLE_SKILLS } from '@/types'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
@@ -9,7 +10,13 @@ import { Badge } from '@/components/ui/Badge'
 interface CreateVacancyModalProps {
   isOpen: boolean
   onClose: () => void
-  onNext: (data: VacancyFormData) => void
+  onNext: (data: VacancyFormData) => void | Promise<void>
+  isSubmitting?: boolean
+  error?: string | null
+  /** Початкові значення: режим редагування. */
+  initial?: VacancyFormData | null
+  heading?: string
+  submitLabel?: string
 }
 
 const LEVELS: { value: SeniorityLevel; label: string; emoji: string }[] = [
@@ -18,10 +25,31 @@ const LEVELS: { value: SeniorityLevel; label: string; emoji: string }[] = [
   { value: 'senior', label: 'Senior', emoji: '🔴' },
 ]
 
-export function CreateVacancyModal({ isOpen, onClose, onNext }: CreateVacancyModalProps) {
+export function CreateVacancyModal({
+  isOpen,
+  onClose,
+  onNext,
+  isSubmitting = false,
+  error,
+  initial = null,
+  heading = 'Створити власну вакансію',
+  submitLabel = 'Ок',
+}: CreateVacancyModalProps) {
   const [title, setTitle] = useState('')
   const [level, setLevel] = useState<SeniorityLevel>('middle')
   const [skills, setSkills] = useState<string[]>([])
+  const [configEnabled, setConfigEnabled] = useState(false)
+  const [config, setConfig] = useState<InterviewConfig>(DEFAULT_INTERVIEW_CONFIG)
+
+  // Форма заповнюється при відкритті (початкові значення або порожня) і очищається при закритті,
+  // тому при помилці запиту введені дані не втрачаються.
+  useEffect(() => {
+    setTitle(isOpen ? initial?.title ?? '' : '')
+    setLevel(isOpen ? initial?.level ?? 'middle' : 'middle')
+    setSkills(isOpen ? initial?.skills ?? [] : [])
+    setConfigEnabled(isOpen ? Boolean(initial?.interviewConfig) : false)
+    setConfig(isOpen ? initial?.interviewConfig ?? DEFAULT_INTERVIEW_CONFIG : DEFAULT_INTERVIEW_CONFIG)
+  }, [isOpen, initial])
 
   const toggleSkill = (skill: string) => {
     setSkills((prev) =>
@@ -32,14 +60,11 @@ export function CreateVacancyModal({ isOpen, onClose, onNext }: CreateVacancyMod
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title.trim() || skills.length === 0) return
-    onNext({ title: title.trim(), level, skills })
-    setTitle('')
-    setLevel('middle')
-    setSkills([])
+    void onNext({ title: title.trim(), level, skills, interviewConfig: configEnabled ? config : null })
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Створити власну вакансію" size="xl">
+    <Modal isOpen={isOpen} onClose={onClose} title={heading} size="xl">
       <form onSubmit={handleSubmit} className="space-y-6">
         <Input
           label="Назва вакансії"
@@ -93,10 +118,30 @@ export function CreateVacancyModal({ isOpen, onClose, onNext }: CreateVacancyMod
           )}
         </div>
 
+        <div className="space-y-4">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={configEnabled}
+              onChange={(e) => setConfigEnabled(e.target.checked)}
+              className="w-4 h-4 accent-primary"
+            />
+            <span className="text-sm font-medium text-text">Конфігурація співбесіди</span>
+          </label>
+          <p className="text-xs text-muted -mt-2">
+            {configEnabled
+              ? 'Усі користувачі проходитимуть співбесіду з цією конфігурацією.'
+              : 'Кожен користувач налаштовуватиме конфігурацію сам.'}
+          </p>
+          {configEnabled && <InterviewConfigFields value={config} onChange={setConfig} />}
+        </div>
+
+        {error && <p className="text-sm text-red-400">{error}</p>}
+
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="ghost" onClick={onClose}>Скасувати</Button>
-          <Button type="submit" disabled={!title.trim() || skills.length === 0}>
-            Далі →
+          <Button type="button" variant="ghost" onClick={onClose} disabled={isSubmitting}>Скасувати</Button>
+          <Button type="submit" disabled={isSubmitting || !title.trim() || skills.length === 0}>
+            {isSubmitting ? 'Збереження…' : submitLabel}
           </Button>
         </div>
       </form>

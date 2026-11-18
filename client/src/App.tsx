@@ -10,6 +10,9 @@ import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { AccountPage } from '@/pages/AccountPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { GuestRoute } from '@/components/auth/GuestRoute'
+import { AdminPage } from '@/pages/AdminPage'
+import { ProviderAccessPage } from '@/pages/ProviderAccessPage'
+import { HomeRedirect } from '@/components/auth/HomeRedirect'
 
 export function App() {
   return (
@@ -25,14 +28,25 @@ export function App() {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Navigate to="/vacancies" replace />} />
+          <Route path="/" element={<HomeRedirect />} />
+          {/* Без провайдера: мок-вакансії */}
           <Route path="/vacancies" element={<VacanciesPage />} />
           <Route path="/interview" element={<InterviewPage />} />
+          <Route path="/provider/:slug/vacancies" element={<VacanciesPage />} />
+          <Route path="/provider/:slug/interview" element={<InterviewPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/account" element={<AccountPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/vacancies" replace />} />
+        <Route element={<ProtectedRoute roles={['super_admin']} />}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['super_admin', 'provider_admin']} />}>
+          <Route path="/provider/:slug/access" element={<ProviderAccessPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

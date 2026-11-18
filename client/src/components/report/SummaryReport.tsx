@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Trophy, TrendingUp, AlertTriangle, Code, Bot, ListChecks, Check, X, ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { useVacanciesPath } from '@/hooks/useVacanciesPath'
 import type {
   InterviewReport,
   QuizReportSection,
@@ -146,6 +147,7 @@ function BotAnalysis({ section }: { section: BotReportSection }) {
 
 export function SummaryReport({ report, vacancyTitle }: SummaryReportProps) {
   const navigate = useNavigate()
+  const backPath = useVacanciesPath()
   const { quiz, coding, bot } = report.sections
   const overallPercentage = percent(report.score, report.maxScore)
 
@@ -258,7 +260,7 @@ export function SummaryReport({ report, vacancyTitle }: SummaryReportProps) {
       )}
 
       <div className="flex justify-center pt-4">
-        <Button variant="secondary" onClick={() => navigate('/vacancies')}>
+        <Button variant="secondary" onClick={() => navigate(backPath)}>
           <ArrowLeft size={16} />
           Повернутись до вакансій
         </Button>

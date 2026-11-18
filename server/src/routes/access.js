@@ -27,7 +27,7 @@ export function createAccessRouter(db, jwtSecret) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const created = await grantAccess(db, req.provider, parsed.data.userId)
+      const created = await grantAccess(db, req.provider, parsed.data)
       res.status(created ? 201 : 200).json({ ok: true })
     } catch (error) {
       next(error)

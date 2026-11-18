@@ -21,7 +21,7 @@ export function GuestRoute() {
   }
 
   if (status === 'authenticated') {
-    return <Navigate to="/vacancies" replace />
+    return <Navigate to="/" replace />
   }
 
   return <Outlet />

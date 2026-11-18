@@ -45,6 +45,12 @@ export const changeEmailSchema = z.object({
   password: z.string().min(8),
 })
 
+const interviewConfigSchema = z.object({
+  type: z.enum(['quiz', 'bot']),
+  questionCount: z.number().int().min(1).max(20),
+  enableCoding: z.boolean(),
+})
+
 export const vacancyCreateSchema = z.object({
   title: z.string().trim().min(1),
   level: z.enum(['junior', 'middle', 'senior']),
@@ -53,6 +59,7 @@ export const vacancyCreateSchema = z.object({
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
   codingTask: codingTaskSchema.nullable().optional(),
+  interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
 export const vacancyPatchSchema = z.object({
@@ -63,6 +70,7 @@ export const vacancyPatchSchema = z.object({
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
   codingTask: codingTaskSchema.nullable().optional(),
+  interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
 // Клієнтські маршрути живуть під префіксом /provider/<slug>/..., тому зі службовими
@@ -96,9 +104,12 @@ export const userPatchSchema = z
   })
   .refine((v) => v.role !== undefined || v.providerId !== undefined, 'Nothing to update')
 
-export const accessGrantSchema = z.object({
-  userId: z.string().min(1),
-})
+// Доступ видається за id користувача (super_admin обирає зі списку) або за email
+// (provider_admin не бачить список усіх користувачів).
+export const accessGrantSchema = z.union([
+  z.object({ userId: z.string().min(1) }),
+  z.object({ email: registerSchema.shape.email }),
+])
 
 export const prepareSchema = z.object({
   type: z.enum(['quiz', 'bot']),
@@ -148,6 +159,7 @@ export function toVacancyDto(row) {
     quizQuestions: row.quizQuestions ?? null,
     botQuestions: row.botQuestions ?? null,
     codingTask: row.codingTask ?? null,
+    interviewConfig: row.interviewConfig ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

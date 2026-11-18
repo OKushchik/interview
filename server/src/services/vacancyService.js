@@ -31,6 +31,7 @@ export async function createVacancy(db, userId, providerId, input) {
     quizQuestions: normalized.quizQuestions ?? null,
     botQuestions: normalized.botQuestions ?? null,
     codingTask: normalized.codingTask ?? null,
+    interviewConfig: input.interviewConfig ?? null,
   })
   return toVacancyDto(row)
 }
@@ -53,6 +54,7 @@ export async function patchVacancy(db, id, providerId, input) {
   if (input.quizQuestions !== undefined) values.quizQuestions = normalized.quizQuestions ?? null
   if (input.botQuestions !== undefined) values.botQuestions = normalized.botQuestions ?? null
   if (input.codingTask !== undefined) values.codingTask = normalized.codingTask ?? null
+  if (input.interviewConfig !== undefined) values.interviewConfig = input.interviewConfig
 
   const row = await db.Vacancy.update(values, { where: { id, providerId } })
   return toVacancyDto(row)
