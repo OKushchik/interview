@@ -1,26 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-
-interface SpeechRecognitionEvent {
-  results: SpeechRecognitionResultList
-}
-
-interface SpeechRecognitionInstance extends EventTarget {
-  continuous: boolean
-  interimResults: boolean
-  lang: string
-  start: () => void
-  stop: () => void
-  onresult: ((event: SpeechRecognitionEvent) => void) | null
-  onerror: ((event: Event) => void) | null
-  onend: (() => void) | null
-}
-
-declare global {
-  interface Window {
-    SpeechRecognition: new () => SpeechRecognitionInstance
-    webkitSpeechRecognition: new () => SpeechRecognitionInstance
-  }
-}
+import type { SpeechRecognitionEvent, SpeechRecognitionInstance } from '@/types'
 
 export function useSpeechRecognition() {
   const [isListening, setIsListening] = useState(false)

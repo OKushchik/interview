@@ -7,8 +7,7 @@ import { Header } from '@/components/layout/Header'
 import { QuizInterview } from '@/components/interview/QuizInterview'
 import { BotInterview } from '@/components/interview/BotInterview'
 import { CodingSection } from '@/components/interview/CodingSection'
-
-type Phase = 'interview' | 'coding' | 'generating'
+import type { InterviewPhase } from '@/types'
 
 export function InterviewPage() {
   const navigate = useNavigate()
@@ -20,7 +19,7 @@ export function InterviewPage() {
     setReport,
   } = useInterviewStore()
 
-  const [phase, setPhase] = useState<Phase>('interview')
+  const [phase, setPhase] = useState<InterviewPhase>('interview')
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({})
   const [botAnswers, setBotAnswers] = useState<Record<string, { answer: string; feedback?: string }>>({})
   const [codingCode, setCodingCode] = useState('')

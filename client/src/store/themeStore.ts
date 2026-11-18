@@ -1,13 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-
-export type Theme = 'dark' | 'light'
-
-interface ThemeState {
-  theme: Theme
-  toggleTheme: () => void
-  setTheme: (theme: Theme) => void
-}
+import type { Theme, ThemeState } from '@/types'
 
 export function applyTheme(theme: Theme) {
   document.documentElement.setAttribute('data-theme', theme)

@@ -1,19 +1,5 @@
-import type {
-  Vacancy,
-  InterviewConfig,
-  InterviewSession,
-  InterviewReport,
-  QuizQuestion,
-  BotQuestion,
-  CodingTask,
-} from '@/types'
+import type { InterviewConfig, InterviewReport, InterviewSession, PrepareResponse, Vacancy } from '@/types'
 import { apiRequest } from './api'
-
-type PrepareResponse = {
-  quizQuestions: QuizQuestion[]
-  botQuestions: BotQuestion[]
-  codingTask?: CodingTask
-}
 
 export async function generateQuestions(
   vacancy: Vacancy,
