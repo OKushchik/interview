@@ -128,7 +128,7 @@ export function initModels(sequelize) {
         type: DataTypes.JSONB,
         allowNull: true,
       },
-      codingTask: {
+      codingTasks: {
         type: DataTypes.JSONB,
         allowNull: true,
       },

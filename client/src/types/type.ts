@@ -1,4 +1,4 @@
-import type { BotQuestion, CodingTask, QuizQuestion } from './interface'
+import type { BotQuestion, CodingTask, InterviewSession, QuizQuestion } from './interface'
 
 export type SeniorityLevel = 'junior' | 'middle' | 'senior'
 
@@ -15,7 +15,7 @@ export type AuthMode = 'login' | 'register'
 export type PrepareResponse = {
   quizQuestions: QuizQuestion[]
   botQuestions: BotQuestion[]
-  codingTask?: CodingTask
+  codingTasks?: CodingTask[]
 }
 
 export type AuthCredentials = { email: string; password: string }
@@ -28,3 +28,9 @@ export type Theme = 'dark' | 'light'
 
 /** Кому видати доступ: за id (зі списку) або за email. */
 export type AccessGrant = { userId: string } | { email: string }
+
+export type LoadStatus = 'loading' | 'ready' | 'forbidden' | 'error'
+
+export type PreparedQuestions = Pick<InterviewSession, 'quizQuestions' | 'botQuestions' | 'codingTasks'>
+
+export type ModalSize = 'md' | 'lg' | 'xl'

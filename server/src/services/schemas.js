@@ -49,6 +49,7 @@ const interviewConfigSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),
   enableCoding: z.boolean(),
+  codingCount: z.number().int().min(1).max(20).default(1),
 })
 
 export const vacancyCreateSchema = z.object({
@@ -58,7 +59,7 @@ export const vacancyCreateSchema = z.object({
   description: z.string().optional().default(''),
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
-  codingTask: codingTaskSchema.nullable().optional(),
+  codingTasks: z.array(codingTaskSchema).nullable().optional(),
   interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
@@ -69,7 +70,7 @@ export const vacancyPatchSchema = z.object({
   description: z.string().optional(),
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
-  codingTask: codingTaskSchema.nullable().optional(),
+  codingTasks: z.array(codingTaskSchema).nullable().optional(),
   interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
@@ -115,6 +116,7 @@ export const prepareSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),
   enableCoding: z.boolean(),
+  codingCount: z.number().int().min(1).max(20).default(1),
 })
 
 export const interviewPrepareSchema = z.object({
@@ -136,15 +138,10 @@ function withIds(items, prefix) {
 }
 
 export function normalizeVacancyFields(input) {
-  const coding = input.codingTask
   return {
     quizQuestions: withIds(input.quizQuestions, 'q') ?? null,
     botQuestions: withIds(input.botQuestions, 'b') ?? null,
-    codingTask: coding
-      ? { ...coding, id: coding.id || 'coding-1' }
-      : coding === null
-        ? null
-        : undefined,
+    codingTasks: withIds(input.codingTasks, 'coding-') ?? null,
   }
 }
 
@@ -158,7 +155,7 @@ export function toVacancyDto(row) {
     description: row.description,
     quizQuestions: row.quizQuestions ?? null,
     botQuestions: row.botQuestions ?? null,
-    codingTask: row.codingTask ?? null,
+    codingTasks: row.codingTasks ?? null,
     interviewConfig: row.interviewConfig ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,

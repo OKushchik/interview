@@ -5,14 +5,20 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 
 interface CodingSectionProps {
-  task: CodingTask
-  code: string
-  onCodeChange: (code: string) => void
+  tasks: CodingTask[]
+  /** Код по id завдання. */
+  codes: Record<string, string>
+  onCodeChange: (taskId: string, code: string) => void
   onComplete: () => void
 }
 
-export function CodingSection({ task, code, onCodeChange, onComplete }: CodingSectionProps) {
+export function CodingSection({ tasks, codes, onCodeChange, onComplete }: CodingSectionProps) {
   const [lineCount] = useState(20)
+  const [index, setIndex] = useState(0)
+
+  const task = tasks[index]
+  const isLast = index === tasks.length - 1
+  const code = codes[task.id] ?? ''
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -22,6 +28,11 @@ export function CodingSection({ task, code, onCodeChange, onComplete }: CodingSe
             <Code size={20} className="text-cyan" />
           </div>
           <h2 className="text-lg font-semibold text-text">{task.title}</h2>
+          {tasks.length > 1 && (
+            <span className="ml-auto text-sm text-muted">
+              Завдання {index + 1} з {tasks.length}
+            </span>
+          )}
         </div>
 
         <p className="text-muted mb-6 leading-relaxed">{task.description}</p>
@@ -37,7 +48,7 @@ export function CodingSection({ task, code, onCodeChange, onComplete }: CodingSe
           </div>
           <textarea
             value={code || task.starterCode}
-            onChange={(e) => onCodeChange(e.target.value)}
+            onChange={(e) => onCodeChange(task.id, e.target.value)}
             rows={lineCount}
             spellCheck={false}
             className="w-full px-4 py-3 bg-code-bg text-code-text font-mono text-sm leading-6 focus:outline-none resize-y"
@@ -45,8 +56,11 @@ export function CodingSection({ task, code, onCodeChange, onComplete }: CodingSe
         </div>
 
         <div className="flex justify-end mt-4">
-          <Button onClick={onComplete} disabled={!code && !task.starterCode}>
-            Завершити кодинг →
+          <Button
+            onClick={() => (isLast ? onComplete() : setIndex(index + 1))}
+            disabled={!code && !task.starterCode}
+          >
+            {isLast ? 'Завершити кодинг →' : 'Наступне завдання →'}
           </Button>
         </div>
       </Card>

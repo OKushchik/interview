@@ -40,7 +40,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await createVacancy(db, req.user.id, req.provider.id, parsed.data)
+      const vacancy = await createVacancy(db, req.user.id, req.provider.id, parsed.data, generator)
       res.status(201).json({ vacancy })
     } catch (error) {
       next(error)
@@ -67,7 +67,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await patchVacancy(db, req.params.id, req.provider.id, parsed.data)
+      const vacancy = await patchVacancy(db, req.params.id, req.provider.id, parsed.data, generator)
       if (!vacancy) {
         res.status(404).json({ error: 'Vacancy not found' })
         return

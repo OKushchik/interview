@@ -51,7 +51,7 @@ function createFakeDb() {
 const generator = {
   generateQuiz: async () => [{ id: 'q1', question: 'Q?', options: ['a', 'b', 'c', 'd'], correctIndex: 0 }],
   generateBot: async () => [{ id: 'b1', question: 'Q?' }],
-  generateCoding: async () => ({ id: 'c', title: 't', description: 'd', starterCode: '' }),
+  generateCoding: async () => [{ id: 'c', title: 't', description: 'd', starterCode: '' }],
 }
 
 describe('multitenant API', () => {

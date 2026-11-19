@@ -8,7 +8,7 @@ interface SliderProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'
 }
 
 export function Slider({ label, value, min, max, className = '', ...props }: SliderProps) {
-  const percentage = ((value - min) / (max - min)) * 100
+  const percentage = max === min ? 0 : ((value - min) / (max - min)) * 100
 
   return (
     <div className="space-y-3">

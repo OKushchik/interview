@@ -35,13 +35,14 @@ const reportSchema = z.object({
     type: z.enum(['quiz', 'bot']),
     questionCount: z.number(),
     enableCoding: z.boolean(),
+    codingCount: z.number().optional(),
   }),
   quizQuestions: z.array(z.any()).default([]),
   botQuestions: z.array(z.any()).default([]),
-  codingTask: z.any().optional(),
+  codingTasks: z.array(z.any()).default([]),
   quizAnswers: z.array(z.any()).default([]),
   botAnswers: z.array(z.any()).default([]),
-  codingAnswer: z.any().optional(),
+  codingAnswers: z.array(z.any()).default([]),
 })
 
 export function createInterviewRouter(db, jwtSecret, generator) {
@@ -120,7 +121,7 @@ export function createInterviewRouter(db, jwtSecret, generator) {
           ...parsed.data.vacancy,
           quizQuestions: null,
           botQuestions: null,
-          codingTask: null,
+          codingTasks: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },

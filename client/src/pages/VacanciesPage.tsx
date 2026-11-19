@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Vacancy, VacancyFormData, InterviewConfig } from '@/types'
+import type { Vacancy, VacancyFormData, InterviewConfig, LoadStatus } from '@/types'
 import { MOCK_VACANCIES } from '@/data/mockVacancies'
 import { useAuthStore } from '@/store/authStore'
 import { useInterviewStore } from '@/store/interviewStore'
@@ -17,8 +17,6 @@ import { CreateVacancyModal } from '@/components/modals/CreateVacancyModal'
 import { InterviewConfigModal } from '@/components/modals/InterviewConfigModal'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
-
-type LoadStatus = 'loading' | 'ready' | 'forbidden' | 'error'
 
 /**
  * Список вакансій. З `:slug` (/provider/<slug>/vacancies) вакансії приходять з API,
@@ -92,12 +90,7 @@ export function VacanciesPage() {
   const handleStartInterview = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy)
     setGenerateError(null)
-    // Збережена конфігурація вакансії провайдера застосовується без запитів до користувача;
-    // для замоканих вакансій (без providerId) користувач завжди налаштовує сам.
-    if (vacancy.providerId && vacancy.interviewConfig) {
-      void handleConfigStart(vacancy.interviewConfig, vacancy)
-      return
-    }
+    // Конфігурацію завжди обирає користувач: вікно відкривається щоразу.
     setShowConfigModal(true)
   }
 
@@ -161,9 +154,10 @@ export function VacanciesPage() {
         config,
         quizQuestions: questions.quizQuestions,
         botQuestions: questions.botQuestions,
-        codingTask: questions.codingTask,
+        codingTasks: questions.codingTasks,
         quizAnswers: [],
         botAnswers: [],
+        codingAnswers: [],
       })
       setShowConfigModal(false)
       navigate(slug ? providerPath(slug, 'interview') : '/interview')
@@ -293,7 +287,7 @@ export function VacanciesPage() {
         }}
         onStart={handleConfigStart}
         isGenerating={isGenerating}
-        vacancyTitle={selectedVacancy?.title || ''}
+        vacancy={selectedVacancy}
         error={generateError}
       />
     </div>

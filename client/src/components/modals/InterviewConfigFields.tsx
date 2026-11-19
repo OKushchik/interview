@@ -1,42 +1,22 @@
-import { Target, Bot } from 'lucide-react'
-import type { InterviewConfig, InterviewType } from '@/types'
+import type { InterviewConfig, InterviewConfigLimits } from '@/types'
+import { INTERVIEW_TYPE_OPTIONS } from '@/types'
 import { Slider } from '@/components/ui/Slider'
 import { Toggle } from '@/components/ui/Toggle'
-
-export const DEFAULT_INTERVIEW_CONFIG: InterviewConfig = {
-  type: 'quiz',
-  questionCount: 10,
-  enableCoding: false,
-}
-
-const TYPES: { value: InterviewType; label: string; description: string; icon: typeof Target }[] = [
-  {
-    value: 'quiz',
-    label: 'Quiz (Тести)',
-    description: 'Питання з 4 варіантами відповідей',
-    icon: Target,
-  },
-  {
-    value: 'bot',
-    label: 'Online Bot',
-    description: 'Вільна форма з текстом або голосом',
-    icon: Bot,
-  },
-]
 
 interface InterviewConfigFieldsProps {
   value: InterviewConfig
   onChange: (value: InterviewConfig) => void
+  limits?: InterviewConfigLimits
 }
 
 /** Поля конфігурації співбесіди: тип, кількість питань, онлайн кодинг. */
-export function InterviewConfigFields({ value, onChange }: InterviewConfigFieldsProps) {
+export function InterviewConfigFields({ value, onChange, limits }: InterviewConfigFieldsProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <label className="block text-sm font-medium text-muted">Тип співбесіди</label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {TYPES.map((t) => {
+          {INTERVIEW_TYPE_OPTIONS.map((t) => {
             const Icon = t.icon
             return (
               <button
@@ -63,17 +43,26 @@ export function InterviewConfigFields({ value, onChange }: InterviewConfigFields
       <Slider
         label="Кількість питань"
         value={value.questionCount}
-        min={5}
-        max={20}
+        min={1}
+        max={limits ? limits.questions : 20}
         onChange={(e) => onChange({ ...value, questionCount: Number(e.target.value) })}
       />
-
       <Toggle
         label="Онлайн кодинг"
         description="Додати секцію з написанням коду"
         checked={value.enableCoding}
         onChange={(enableCoding) => onChange({ ...value, enableCoding })}
       />
+
+      {value.enableCoding && (
+        <Slider
+          label="Кількість завдань з кодингу"
+          value={value.codingCount}
+          min={1}
+          max={limits ? limits.coding : 20}
+          onChange={(e) => onChange({ ...value, codingCount: Number(e.target.value) })}
+        />
+      )}
     </div>
   )
 }

@@ -13,8 +13,10 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
         config,
         quizQuestions: [],
         botQuestions: [],
+        codingTasks: [],
         quizAnswers: [],
         botAnswers: [],
+        codingAnswers: [],
       },
       report: null,
     })
@@ -51,7 +53,8 @@ export const useInterviewStore = create<InterviewState>((set, get) => ({
   saveCodingAnswer: (answer) => {
     const session = get().currentSession
     if (!session) return
-    set({ currentSession: { ...session, codingAnswer: answer } })
+    const filtered = session.codingAnswers.filter((a) => a.taskId !== answer.taskId)
+    set({ currentSession: { ...session, codingAnswers: [...filtered, answer] } })
   },
 
   setReport: (report) => set({ report }),

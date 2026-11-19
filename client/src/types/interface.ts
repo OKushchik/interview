@@ -9,7 +9,7 @@ export interface Vacancy {
   description: string
   quizQuestions?: QuizQuestion[] | null
   botQuestions?: BotQuestion[] | null
-  codingTask?: CodingTask | null
+  codingTasks?: CodingTask[] | null
   /** Збережена конфігурація співбесіди; null — користувач налаштовує сам. */
   interviewConfig?: InterviewConfig | null
 }
@@ -25,6 +25,8 @@ export interface InterviewConfig {
   type: InterviewType
   questionCount: number
   enableCoding: boolean
+  /** Кількість завдань з онлайн кодингу (0–20), діє лише коли enableCoding. */
+  codingCount: number
 }
 
 export interface QuizQuestion {
@@ -38,6 +40,8 @@ export interface QuizQuestion {
 export interface BotQuestion {
   id: string
   question: string
+  /** Еталонна відповідь (є у готових питань, наприклад мокових). */
+  answer?: string
 }
 
 export interface CodingTask {
@@ -68,10 +72,10 @@ export interface InterviewSession {
   config: InterviewConfig
   quizQuestions: QuizQuestion[]
   botQuestions: BotQuestion[]
-  codingTask?: CodingTask
+  codingTasks: CodingTask[]
   quizAnswers: QuizAnswer[]
   botAnswers: BotAnswer[]
-  codingAnswer?: CodingAnswer
+  codingAnswers: CodingAnswer[]
 }
 
 export interface QuizReportDetail {
@@ -234,4 +238,10 @@ export interface ThemeState {
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
+}
+
+/** Максимуми повзунків (кількість питань у БД); тоді мінімум 0. Без limits діють діапазони адмін-форми. */
+export interface InterviewConfigLimits {
+  questions: number
+  coding: number
 }

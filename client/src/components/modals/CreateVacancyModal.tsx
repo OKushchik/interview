@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import type { VacancyFormData, SeniorityLevel, InterviewConfig } from '@/types'
-import { DEFAULT_INTERVIEW_CONFIG, InterviewConfigFields } from './InterviewConfigFields'
-import { AVAILABLE_SKILLS } from '@/types'
+import type { VacancyFormData, InterviewConfig, SeniorityLevel } from '@/types'
+import { InterviewConfigFields } from './InterviewConfigFields'
+import { AVAILABLE_SKILLS, DEFAULT_INTERVIEW_CONFIG, SENIORITY_LEVEL_OPTIONS } from '@/types'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
@@ -18,12 +18,6 @@ interface CreateVacancyModalProps {
   heading?: string
   submitLabel?: string
 }
-
-const LEVELS: { value: SeniorityLevel; label: string; emoji: string }[] = [
-  { value: 'junior', label: 'Junior', emoji: '🟢' },
-  { value: 'middle', label: 'Middle', emoji: '🟡' },
-  { value: 'senior', label: 'Senior', emoji: '🔴' },
-]
 
 export function CreateVacancyModal({
   isOpen,
@@ -48,7 +42,8 @@ export function CreateVacancyModal({
     setLevel(isOpen ? initial?.level ?? 'middle' : 'middle')
     setSkills(isOpen ? initial?.skills ?? [] : [])
     setConfigEnabled(isOpen ? Boolean(initial?.interviewConfig) : false)
-    setConfig(isOpen ? initial?.interviewConfig ?? DEFAULT_INTERVIEW_CONFIG : DEFAULT_INTERVIEW_CONFIG)
+    // Старі збережені конфігурації можуть не мати codingCount, тому доповнюємо значеннями за замовчуванням.
+    setConfig(isOpen ? { ...DEFAULT_INTERVIEW_CONFIG, ...initial?.interviewConfig } : DEFAULT_INTERVIEW_CONFIG)
   }, [isOpen, initial])
 
   const toggleSkill = (skill: string) => {
@@ -77,7 +72,7 @@ export function CreateVacancyModal({
         <div className="space-y-3">
           <label className="block text-sm font-medium text-muted">Рівень (Seniority)</label>
           <div className="grid grid-cols-3 gap-3">
-            {LEVELS.map((l) => (
+            {SENIORITY_LEVEL_OPTIONS.map((l) => (
               <button
                 key={l.value}
                 type="button"
