@@ -13,4 +13,7 @@ export const providersApi = {
     })
     return data.provider
   },
+  async remove(slug: string): Promise<void> {
+    await apiRequest<void>(`/api/providers/${encodeURIComponent(slug)}`, { method: 'DELETE' })
+  },
 }

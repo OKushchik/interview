@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
 import { userPatchSchema } from '../services/schemas.js'
-import { listUsers, updateUser } from '../services/userService.js'
+import { deleteUser, listUsers, updateUser } from '../services/userService.js'
 
 /** /api/users: керування користувачами (лише super_admin). */
 export function createUsersRouter(db, jwtSecret) {
@@ -26,6 +26,15 @@ export function createUsersRouter(db, jwtSecret) {
         return
       }
       res.json({ user: await updateUser(db, req.user.id, req.params.id, parsed.data) })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  router.delete('/:id', async (req, res, next) => {
+    try {
+      await deleteUser(db, req.user.id, req.params.id)
+      res.status(204).end()
     } catch (error) {
       next(error)
     }

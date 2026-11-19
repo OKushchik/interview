@@ -16,6 +16,7 @@ export function ProvidersTab() {
   const [slug, setSlug] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -44,6 +45,23 @@ export function ProvidersTab() {
       setError(getErrorMessage(err, 'Не вдалося створити провайдера'))
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const onDelete = async (p: Provider) => {
+    const ok = window.confirm(
+      `Видалити провайдера «${p.name}»? Усі його вакансії та доступи буде видалено безповоротно.`,
+    )
+    if (!ok) return
+    setDeletingId(p.id)
+    setError(null)
+    try {
+      await providersApi.remove(p.slug)
+      await Promise.all([load(), refreshUser()])
+    } catch (err) {
+      setError(getErrorMessage(err, 'Не вдалося видалити провайдера'))
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -87,7 +105,17 @@ export function ProvidersTab() {
             {providers.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-3 py-3">
                 <span className="text-sm text-text">{p.name}</span>
-                <code className="text-xs text-muted">/provider/{p.slug}/vacancies</code>
+                <div className="flex items-center gap-3">
+                  <code className="text-xs text-muted">/provider/{p.slug}/vacancies</code>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    disabled={deletingId === p.id}
+                    onClick={() => void onDelete(p)}
+                  >
+                    {deletingId === p.id ? 'Видалення…' : 'Видалити'}
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>

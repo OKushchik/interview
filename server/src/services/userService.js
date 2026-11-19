@@ -43,3 +43,14 @@ export async function updateUser(db, actorId, targetId, input) {
   const updated = await db.User.update({ role, providerId }, { where: { id: target.id } })
   return toUserDto(updated)
 }
+
+/** Видалення користувача разом з його вакансіями та доступами. Лише для super_admin (перевіряється в роуті). */
+export async function deleteUser(db, actorId, targetId) {
+  const target = await db.User.findOne({ where: { id: targetId } })
+  if (!target) throw new HttpError(404, 'User not found')
+  if (target.id === actorId) throw new HttpError(400, 'You cannot delete your own account')
+
+  await db.UserProviderAccess.destroy({ where: { userId: target.id } })
+  await db.Vacancy.destroy({ where: { userId: target.id } })
+  await db.User.destroy({ where: { id: target.id } })
+}

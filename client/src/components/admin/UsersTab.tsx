@@ -28,6 +28,7 @@ export function UsersTab() {
   const [drafts, setDrafts] = useState<Record<string, Draft>>({})
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -77,6 +78,23 @@ export function UsersTab() {
     }
   }
 
+  const onDelete = async (u: AdminUser) => {
+    const ok = window.confirm(
+      `Видалити користувача «${u.email}»? Усі його вакансії та доступи буде видалено безповоротно.`,
+    )
+    if (!ok) return
+    setDeletingId(u.id)
+    setError(null)
+    try {
+      await usersApi.remove(u.id)
+      setUsers((prev) => prev.filter((x) => x.id !== u.id))
+    } catch (e) {
+      setError(getErrorMessage(e, 'Не вдалося видалити користувача'))
+    } finally {
+      setDeletingId(null)
+    }
+  }
+
   const providerOptions = [
     { value: '', label: 'Оберіть провайдера' },
     ...providers.map((p) => ({ value: p.id, label: p.name })),
@@ -97,7 +115,7 @@ export function UsersTab() {
             const locked = u.isGuest || u.id === currentUserId
             const needsProvider = d.role === 'provider_admin' && !d.providerId
             return (
-              <li key={u.id} className="py-4 grid grid-cols-1 lg:grid-cols-[1fr_auto_auto_auto] gap-3 lg:items-end">
+              <li key={u.id} className="py-4 grid grid-cols-1 lg:grid-cols-[1fr_auto_auto_auto_auto] gap-3 lg:items-end">
                 <div className="min-w-0">
                   <p className="text-sm text-text truncate">{u.email}</p>
                   <div className="flex gap-2 mt-1">
@@ -130,6 +148,14 @@ export function UsersTab() {
                   disabled={locked || !isDirty(u) || needsProvider || savingId === u.id}
                 >
                   {savingId === u.id ? 'Збереження…' : 'Зберегти'}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="danger"
+                  onClick={() => onDelete(u)}
+                  disabled={u.id === currentUserId || deletingId === u.id}
+                >
+                  {deletingId === u.id ? 'Видалення…' : 'Видалити'}
                 </Button>
               </li>
             )

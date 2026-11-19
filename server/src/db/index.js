@@ -53,6 +53,9 @@ export const db = {
       }
       return toUserRow(rows[0])
     },
+    async destroy({ where }) {
+      return User.destroy({ where })
+    },
   },
   Provider: {
     async findOne({ where }) {

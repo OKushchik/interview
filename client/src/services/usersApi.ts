@@ -13,4 +13,7 @@ export const usersApi = {
     })
     return data.user
   },
+  async remove(id: string): Promise<void> {
+    await apiRequest<void>(`/api/users/${encodeURIComponent(id)}`, { method: 'DELETE' })
+  },
 }
