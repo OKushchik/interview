@@ -1,6 +1,6 @@
 import { ArrowRight, Loader2, Pencil, Trash2 } from 'lucide-react'
-import type { Vacancy } from '@/types'
-import { SENIORITY_LABELS, SENIORITY_COLORS } from '@/types'
+import type { Vacancy, VacancyJsonAction } from '@/types'
+import { SENIORITY_LABELS, SENIORITY_COLORS, VACANCY_JSON_OPTIONS } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -12,13 +12,15 @@ interface VacancyCardProps {
   onEdit?: (vacancy: Vacancy) => void
   /** Якщо передано, показується кнопка «Видалити» (лише для адмінів). */
   onDelete?: (vacancy: Vacancy) => void
+  /** Якщо передано, показується вибір «JSON» (імпорт/експорт питань, лише для адмінів). */
+  onJson?: (vacancy: Vacancy, action: VacancyJsonAction) => void
   /** Питання для цієї вакансії зараз генеруються. */
   isLoading?: boolean
   /** Кнопка недоступна (наприклад, триває генерація іншої вакансії). */
   startDisabled?: boolean
 }
 
-export function VacancyCard({ vacancy, onStart, onEdit, onDelete, isLoading = false, startDisabled = false }: VacancyCardProps) {
+export function VacancyCard({ vacancy, onStart, onEdit, onDelete, onJson, isLoading = false, startDisabled = false }: VacancyCardProps) {
   return (
     <Card hoverable className="flex flex-col h-full">
       <div className="flex items-start justify-between mb-3">
@@ -65,6 +67,20 @@ export function VacancyCard({ vacancy, onStart, onEdit, onDelete, isLoading = fa
             </Button>
           )}
         </div>
+      )}
+
+      {onJson && (
+        <select
+          value=""
+          aria-label="JSON"
+          onChange={(e) => onJson(vacancy, e.target.value as VacancyJsonAction)}
+          className="mt-2 w-full px-3 py-1.5 text-sm rounded-xl bg-background/50 border border-border text-text focus:outline-none focus:border-primary/50 transition-colors"
+        >
+          <option value="" disabled className="bg-surface">JSON</option>
+          {VACANCY_JSON_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value} className="bg-surface">{opt.label}</option>
+          ))}
+        </select>
       )}
     </Card>
   )

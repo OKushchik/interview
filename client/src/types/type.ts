@@ -34,3 +34,5 @@ export type LoadStatus = 'loading' | 'ready' | 'forbidden' | 'error'
 export type PreparedQuestions = Pick<InterviewSession, 'quizQuestions' | 'botQuestions' | 'codingTasks'>
 
 export type ModalSize = 'md' | 'lg' | 'xl'
+
+export type VacancyJsonAction = 'import' | 'export'

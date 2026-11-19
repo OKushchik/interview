@@ -1,6 +1,6 @@
 import { Target, Bot } from 'lucide-react'
 import type { InterviewConfig } from './interface'
-import type { InterviewType, ModalSize, SeniorityLevel } from './type'
+import type { InterviewType, ModalSize, SeniorityLevel, VacancyJsonAction } from './type'
 
 export const SENIORITY_LABELS: Record<SeniorityLevel, string> = {
   junior: 'Junior',
@@ -57,3 +57,26 @@ export const MODAL_SIZES: Record<ModalSize, string> = {
   lg: 'max-w-lg',
   xl: 'max-w-2xl',
 }
+
+export const VACANCY_JSON_OPTIONS: { value: VacancyJsonAction; label: string }[] = [
+  { value: 'import', label: 'Імпорт JSON' },
+  { value: 'export', label: 'Експорт JSON' },
+]
+
+export const VACANCY_JSON_EXAMPLE = `{
+  "quizQuestions": [
+    {
+      "id": "q1",
+      "question": "Текст питання",
+      "options": ["A", "B", "C", "D"],
+      "correctIndex": 0,
+      "explanation": "Пояснення (необов'язково)"
+    }
+  ],
+  "botQuestions": [
+    { "id": "b1", "question": "Текст питання", "answer": "Еталонна відповідь (необов'язково)" }
+  ],
+  "codingTasks": [
+    { "id": "coding-1", "title": "Назва", "description": "Опис завдання", "starterCode": "// код" }
+  ]
+}`

@@ -245,3 +245,10 @@ export interface InterviewConfigLimits {
   questions: number
   coding: number
 }
+
+/** Формат JSON-файлу з питаннями вакансії (імпорт/експорт). */
+export interface VacancyQuestionsJson {
+  quizQuestions?: QuizQuestion[] | null
+  botQuestions?: BotQuestion[] | null
+  codingTasks?: CodingTask[] | null
+}

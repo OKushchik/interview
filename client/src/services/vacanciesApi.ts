@@ -1,4 +1,4 @@
-import type { Vacancy, VacancyFormData } from '@/types'
+import type { InterviewConfig, Vacancy, VacancyFormData, VacancyQuestionsJson } from '@/types'
 import { apiRequest } from './api'
 
 const base = (slug: string) => `/api/providers/${encodeURIComponent(slug)}/vacancies`
@@ -19,6 +19,18 @@ export const vacanciesApi = {
     const data = await apiRequest<{ vacancy: Vacancy }>(`${base(slug)}/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       body: JSON.stringify(form),
+    })
+    return data.vacancy
+  },
+  async importQuestions(
+    slug: string,
+    id: string,
+    questions: VacancyQuestionsJson,
+    interviewConfig?: InterviewConfig,
+  ): Promise<Vacancy> {
+    const data = await apiRequest<{ vacancy: Vacancy }>(`${base(slug)}/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ ...questions, ...(interviewConfig ? { interviewConfig } : {}) }),
     })
     return data.vacancy
   },

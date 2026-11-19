@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { Vacancy, VacancyFormData, InterviewConfig, LoadStatus } from '@/types'
+import type { Vacancy, VacancyFormData, InterviewConfig, LoadStatus, VacancyJsonAction } from '@/types'
+import { VACANCY_JSON_EXAMPLE } from '@/types'
+import { alignConfig, buildQuestionsJson, downloadJson, parseQuestionsJson } from '@/utils/vacancyJson'
 import { MOCK_VACANCIES } from '@/data/mockVacancies'
 import { useAuthStore } from '@/store/authStore'
 import { useInterviewStore } from '@/store/interviewStore'
@@ -47,6 +49,9 @@ export function VacanciesPage() {
   const [deletingVacancy, setDeletingVacancy] = useState<Vacancy | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [importingVacancy, setImportingVacancy] = useState<Vacancy | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   // Стабільний об'єкт: модалка скидає форму при зміні initial, тож новий об'єкт на кожен рендер стирав би введене.
   const editInitial = useMemo(
     () => (editingVacancy ? { title: editingVacancy.title, level: editingVacancy.level, skills: editingVacancy.skills, interviewConfig: editingVacancy.interviewConfig ?? null } : null),
@@ -139,7 +144,33 @@ export function VacanciesPage() {
     }
   }
 
-  const handleConfigStart = async (config: InterviewConfig, vacancyOverride?: Vacancy) => {
+  const handleJsonAction = (vacancy: Vacancy, action: VacancyJsonAction) => {
+    if (action === 'export') {
+      downloadJson(buildQuestionsJson(vacancy), `${vacancy.title.replace(/[^\w-]+/g, '_')}-questions.json`)
+      return
+    }
+    setImportError(null)
+    setImportingVacancy(vacancy)
+  }
+
+  const handleImportFile = async (file: File) => {
+    if (!slug || !importingVacancy) return
+    setBusy(true)
+    setImportError(null)
+    try {
+      const questions = parseQuestionsJson(await file.text())
+      const config = alignConfig(importingVacancy.interviewConfig, questions)
+      const updated = await vacanciesApi.importQuestions(slug, importingVacancy.id, questions, config)
+      setApiVacancies((prev) => prev.map((v) => (v.id === updated.id ? updated : v)))
+      setImportingVacancy(null)
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : 'Не вдалося імпортувати файл')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const handleConfigStart =async (config: InterviewConfig, vacancyOverride?: Vacancy) => {
     const vacancy = vacancyOverride ?? selectedVacancy
     if (!vacancy) return
 
@@ -197,6 +228,7 @@ export function VacanciesPage() {
             isLoading={isGenerating && !showConfigModal && selectedVacancy?.id === vacancy.id}
             startDisabled={isGenerating}
             onEdit={canManageVacancies ? (v) => { setEditError(null); setEditingVacancy(v) } : undefined}
+            onJson={canManageVacancies ? handleJsonAction : undefined}
             onDelete={canManageVacancies ? (v) => { setDeleteError(null); setDeletingVacancy(v) } : undefined}
           />
         ))}
@@ -255,6 +287,43 @@ export function VacanciesPage() {
             heading="Редагувати вакансію"
             submitLabel="Зберегти"
           />
+
+          <Modal
+            isOpen={importingVacancy !== null}
+            onClose={() => !busy && setImportingVacancy(null)}
+            title="Імпорт питань з JSON"
+            size="xl"
+          >
+            <p className="text-sm text-muted mb-3">
+              Файл має бути у форматі JSON, як і експортований з вакансії. Кожен масив необов&apos;язковий,
+              але потрібен хоча б один елемент. Імпорт замінює наявні питання вакансії{' '}
+              <span className="text-text font-medium">{importingVacancy?.title}</span>.
+            </p>
+            <pre className="text-xs bg-background/50 border border-border rounded-xl p-3 mb-4 overflow-x-auto">{VACANCY_JSON_EXAMPLE}</pre>
+            <p className="text-xs text-muted mb-4">
+              У quizQuestions рівно 4 варіанти, correctIndex — від 0 до 3.
+            </p>
+            {importError && <p className="text-sm text-red-400 mb-4">{importError}</p>}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                e.target.value = ''
+                if (file) void handleImportFile(file)
+              }}
+            />
+            <div className="flex justify-end gap-3">
+              <Button variant="ghost" onClick={() => setImportingVacancy(null)} disabled={busy}>
+                Скасувати
+              </Button>
+              <Button onClick={() => fileInputRef.current?.click()} disabled={busy}>
+                {busy ? 'Імпорт…' : 'Обрати файл'}
+              </Button>
+            </div>
+          </Modal>
 
           <Modal
             isOpen={deletingVacancy !== null}
