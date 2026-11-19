@@ -19,6 +19,32 @@ export interface VacancyFormData {
   level: SeniorityLevel
   skills: string[]
   interviewConfig?: InterviewConfig | null
+  /** Питання, введені вручну (створення вакансії без AI). */
+  quizQuestions?: QuizDraft[] | null
+  botQuestions?: BotDraft[] | null
+  codingTasks?: CodingDraft[] | null
+}
+
+export interface QuizDraft {
+  question: string
+  options: string[]
+  correctIndex: number
+}
+
+export interface BotDraft {
+  question: string
+}
+
+export interface CodingDraft {
+  title: string
+  description: string
+  starterCode: string
+}
+
+export interface ManualDrafts {
+  quiz: QuizDraft[]
+  bot: BotDraft[]
+  coding: CodingDraft[]
 }
 
 export interface InterviewConfig {

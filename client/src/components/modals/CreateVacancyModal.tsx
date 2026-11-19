@@ -26,7 +26,7 @@ export function CreateVacancyModal({
   isSubmitting = false,
   error,
   initial = null,
-  heading = 'Створити власну вакансію',
+  heading = 'Створити власну вакансію з AI',
   submitLabel = 'Ок',
 }: CreateVacancyModalProps) {
   const [title, setTitle] = useState('')

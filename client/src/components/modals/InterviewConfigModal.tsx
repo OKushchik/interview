@@ -4,6 +4,7 @@ import type { InterviewConfig, Vacancy } from '@/types'
 import { DEFAULT_INTERVIEW_CONFIG, GENERATED_MAX } from '@/types'
 import { Modal } from '@/components/ui/Modal'
 import { Button } from '@/components/ui/Button'
+import { isManualVacancy } from '@/utils/manualVacancy'
 import { InterviewConfigFields } from './InterviewConfigFields'
 
 const clamp = (value: number, max: number, min = 0) => Math.min(Math.max(value, min), max)
@@ -42,8 +43,11 @@ export function InterviewConfigModal({
 
   const questionCount = clamp(config.questionCount, limits.questions, 1)
   const codingCount = clamp(config.codingCount ?? 1, limits.coding, 1)
-  const total = questionCount + (config.enableCoding ? codingCount : 0)
-  const effective: InterviewConfig = { ...config, questionCount, codingCount }
+  // Вакансія, створена вручну без завдань з кодингу, проходиться без секції кодингу (AI її не генерує).
+  const noCoding = vacancy !== null && isManualVacancy(vacancy) && !vacancy.codingTasks?.length
+  const enableCoding = config.enableCoding && !noCoding
+  const total = questionCount + (enableCoding ? codingCount : 0)
+  const effective: InterviewConfig = { ...config, questionCount, codingCount, enableCoding }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Конфігурація співбесіди" size="xl">
@@ -52,7 +56,7 @@ export function InterviewConfigModal({
       </p>
 
       <div className="space-y-6">
-        <InterviewConfigFields value={effective} onChange={setConfig} limits={limits} />
+        <InterviewConfigFields value={effective} onChange={setConfig} limits={limits} hideCoding={noCoding} />
 
         {error && (
           <p className="text-sm text-red-400">{error}</p>

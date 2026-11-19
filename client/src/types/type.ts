@@ -36,3 +36,7 @@ export type PreparedQuestions = Pick<InterviewSession, 'quizQuestions' | 'botQue
 export type ModalSize = 'md' | 'lg' | 'xl'
 
 export type VacancyJsonAction = 'import' | 'export'
+
+export type ManualSection = 'quiz' | 'bot' | 'coding'
+
+export type ManualStep = 'details' | ManualSection

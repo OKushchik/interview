@@ -7,10 +7,12 @@ interface InterviewConfigFieldsProps {
   value: InterviewConfig
   onChange: (value: InterviewConfig) => void
   limits?: InterviewConfigLimits
+  /** Приховує онлайн кодинг: у вакансії немає завдань з кодингу. */
+  hideCoding?: boolean
 }
 
 /** Поля конфігурації співбесіди: тип, кількість питань, онлайн кодинг. */
-export function InterviewConfigFields({ value, onChange, limits }: InterviewConfigFieldsProps) {
+export function InterviewConfigFields({ value, onChange, limits, hideCoding = false }: InterviewConfigFieldsProps) {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
@@ -47,14 +49,16 @@ export function InterviewConfigFields({ value, onChange, limits }: InterviewConf
         max={limits ? limits.questions : 20}
         onChange={(e) => onChange({ ...value, questionCount: Number(e.target.value) })}
       />
+      {!hideCoding && (
       <Toggle
         label="Онлайн кодинг"
         description="Додати секцію з написанням коду"
         checked={value.enableCoding}
         onChange={(enableCoding) => onChange({ ...value, enableCoding })}
       />
+      )}
 
-      {value.enableCoding && (
+      {!hideCoding && value.enableCoding && (
         <Slider
           label="Кількість завдань з кодингу"
           value={value.codingCount}

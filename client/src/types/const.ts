@@ -1,6 +1,6 @@
 import { Target, Bot } from 'lucide-react'
 import type { InterviewConfig } from './interface'
-import type { InterviewType, ModalSize, SeniorityLevel, VacancyJsonAction } from './type'
+import type { InterviewType, ManualSection, ModalSize, SeniorityLevel, VacancyJsonAction } from './type'
 
 export const SENIORITY_LABELS: Record<SeniorityLevel, string> = {
   junior: 'Junior',
@@ -80,3 +80,14 @@ export const VACANCY_JSON_EXAMPLE = `{
     { "id": "coding-1", "title": "Назва", "description": "Опис завдання", "starterCode": "// код" }
   ]
 }`
+
+export const MANUAL_SECTIONS: ManualSection[] = ['quiz', 'bot', 'coding']
+
+export const MANUAL_SECTION_LABELS: Record<ManualSection, string> = {
+  quiz: 'Quiz',
+  bot: 'Online Bot',
+  coding: 'Coding Task',
+}
+
+export const TEXTAREA_CLASS =
+  'w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border text-text placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors'

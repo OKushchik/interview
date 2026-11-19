@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Vacancy, VacancyFormData, InterviewConfig, LoadStatus, VacancyJsonAction } from '@/types'
 import { VACANCY_JSON_EXAMPLE } from '@/types'
+import { isManualVacancy } from '@/utils/manualVacancy'
 import { alignConfig, buildQuestionsJson, downloadJson, parseQuestionsJson } from '@/utils/vacancyJson'
 import { MOCK_VACANCIES } from '@/data/mockVacancies'
 import { useAuthStore } from '@/store/authStore'
@@ -16,6 +17,7 @@ import { VacancyCard } from '@/components/vacancies/VacancyCard'
 import { ProviderSelect } from '@/components/vacancies/ProviderSelect'
 import { NoProviderAccess } from '@/components/vacancies/NoProviderAccess'
 import { CreateVacancyModal } from '@/components/modals/CreateVacancyModal'
+import { ManualVacancyModal } from '@/components/modals/ManualVacancyModal'
 import { InterviewConfigModal } from '@/components/modals/InterviewConfigModal'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
@@ -39,6 +41,7 @@ export function VacanciesPage() {
   const [status, setStatus] = useState<LoadStatus>(slug ? 'loading' : 'ready')
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showManualModal, setShowManualModal] = useState(false)
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [selectedVacancy, setSelectedVacancy] = useState<Vacancy | null>(null)
   const [generateError, setGenerateError] = useState<string | null>(null)
@@ -53,6 +56,7 @@ export function VacanciesPage() {
   const [importError, setImportError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   // Стабільний об'єкт: модалка скидає форму при зміні initial, тож новий об'єкт на кожен рендер стирав би введене.
+  const editingManual = editingVacancy !== null && isManualVacancy(editingVacancy)
   const editInitial = useMemo(
     () => (editingVacancy ? { title: editingVacancy.title, level: editingVacancy.level, skills: editingVacancy.skills, interviewConfig: editingVacancy.interviewConfig ?? null } : null),
     [editingVacancy],
@@ -107,6 +111,21 @@ export function VacanciesPage() {
       const vacancy = await vacanciesApi.create(slug, form)
       setApiVacancies((prev) => [vacancy, ...prev])
       setShowCreateModal(false)
+    } catch (error) {
+      setCreateError(error instanceof ApiError ? error.message : 'Не вдалося створити вакансію')
+    } finally {
+      setCreating(false)
+    }
+  }
+
+  const handleManualCreate = async (form: VacancyFormData) => {
+    if (!slug) return
+    setCreating(true)
+    setCreateError(null)
+    try {
+      const vacancy = await vacanciesApi.create(slug, form)
+      setApiVacancies((prev) => [vacancy, ...prev])
+      setShowManualModal(false)
     } catch (error) {
       setCreateError(error instanceof ApiError ? error.message : 'Не вдалося створити вакансію')
     } finally {
@@ -256,8 +275,12 @@ export function VacanciesPage() {
         {renderContent()}
 
         {canCreateVacancy && status === 'ready' && (
-          <div className="flex justify-center">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button size="lg" onClick={() => { setCreateError(null); setShowCreateModal(true) }}>
+              <Plus size={20} />
+              Створити власну вакансію з AI
+            </Button>
+            <Button size="lg" variant="secondary" onClick={() => { setCreateError(null); setShowManualModal(true) }}>
               <Plus size={20} />
               Створити власну вакансію
             </Button>
@@ -275,15 +298,36 @@ export function VacanciesPage() {
         />
       )}
 
+      {canCreateVacancy && (
+        <ManualVacancyModal
+          isOpen={showManualModal}
+          onClose={() => setShowManualModal(false)}
+          onSubmit={handleManualCreate}
+          isSubmitting={creating}
+          error={createError}
+        />
+      )}
+
       {canManageVacancies && (
         <>
           <CreateVacancyModal
-            isOpen={editingVacancy !== null}
+            isOpen={editingVacancy !== null && !editingManual}
             onClose={() => setEditingVacancy(null)}
             onNext={handleEditSave}
             isSubmitting={busy}
             error={editError}
             initial={editInitial}
+            heading="Редагувати вакансію"
+            submitLabel="Зберегти"
+          />
+
+          <ManualVacancyModal
+            isOpen={editingManual}
+            onClose={() => setEditingVacancy(null)}
+            onSubmit={handleEditSave}
+            isSubmitting={busy}
+            error={editError}
+            initial={editingVacancy}
             heading="Редагувати вакансію"
             submitLabel="Зберегти"
           />
