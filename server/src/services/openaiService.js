@@ -354,6 +354,7 @@ export function createQuestionGenerator(apiKey) {
         description ? `Description / what to cover: ${description}` : '',
         '',
         '- Length: 400-800 words, clear structure with short paragraphs and short headings (plain text, no markdown symbols like # or **).',
+        '- Put every code example in a fenced block: ``` on its own line before and after the code. Wrap short inline code (identifiers, commands) in single backticks.',
         '- Include key concepts, a practical example and common pitfalls.',
         '- Write in Ukrainian, keep technical terms and code in English.',
         'Return only the article text.',

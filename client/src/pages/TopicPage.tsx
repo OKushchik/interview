@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, Pencil, XCircle } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import type { Topic, TopicUpdateData } from '@/types'
 import { useAuthStore } from '@/store/authStore'
+import { TopicContent } from '@/components/topics/TopicContent'
 import { EditTopicModal } from '@/components/modals/EditTopicModal'
 import { topicsApi } from '@/services/topicsApi'
 import { ApiError } from '@/services/api'
@@ -131,7 +132,7 @@ export function TopicPage() {
           )}
         </div>
         <Card>
-          <div className="text-text whitespace-pre-wrap leading-relaxed">{topic.content}</div>
+          <TopicContent content={topic.content} />
         </Card>
         {questions.length > 0 ? (
           <div className="flex justify-end">
