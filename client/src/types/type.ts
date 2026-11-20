@@ -40,3 +40,7 @@ export type VacancyJsonAction = 'import' | 'export'
 export type ManualSection = 'quiz' | 'bot' | 'coding'
 
 export type ManualStep = 'details' | ManualSection
+
+export type TopicCreateMode = 'ai' | 'own'
+
+export type TopicCreateStep = 'mode' | 'text' | 'questions'

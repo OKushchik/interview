@@ -29,6 +29,7 @@ export interface QuizDraft {
   question: string
   options: string[]
   correctIndex: number
+  explanation?: string
 }
 
 export interface BotDraft {
@@ -277,4 +278,24 @@ export interface VacancyQuestionsJson {
   quizQuestions?: QuizQuestion[] | null
   botQuestions?: BotQuestion[] | null
   codingTasks?: CodingTask[] | null
+}
+
+export interface Topic {
+  id: string
+  title: string
+  description: string
+  content: string
+  quizQuestions: QuizQuestion[] | null
+  createdAt?: string
+}
+
+export interface TopicFormData {
+  title: string
+  description: string
+  /** Порожній — текст згенерує AI за назвою й описом. */
+  content: string
+  /** Власні/згенеровані питання; якщо не передано, сервер згенерує сам (за потреби). */
+  quizQuestions?: QuizDraft[] | null
+  questionCount?: number
+  generateQuestions?: boolean
 }

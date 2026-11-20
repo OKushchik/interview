@@ -161,3 +161,32 @@ export function toVacancyDto(row) {
     updatedAt: row.updatedAt,
   }
 }
+
+export const TOPIC_CONTENT_MAX = 50000
+
+export const topicCreateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).optional().default(''),
+  // Порожній content => текст згенерує AI за назвою й описом.
+  content: z.string().trim().max(TOPIC_CONTENT_MAX).optional().default(''),
+  quizQuestions: z.array(quizQuestionSchema).max(50).nullable().optional(),
+  // Скільки питань згенерувати AI, коли quizQuestions не передано.
+  questionCount: z.number().int().min(1).max(20).optional().default(10),
+  generateQuestions: z.boolean().optional().default(true),
+})
+
+export function normalizeQuizIds(questions) {
+  return questions.map((question, index) => ({ ...question, id: `q${index + 1}` }))
+}
+
+export function toTopicDto(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    content: row.content,
+    quizQuestions: row.quizQuestions ?? null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}

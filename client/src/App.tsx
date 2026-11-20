@@ -12,6 +12,8 @@ import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { GuestRoute } from '@/components/auth/GuestRoute'
 import { AdminPage } from '@/pages/AdminPage'
 import { ProviderAccessPage } from '@/pages/ProviderAccessPage'
+import { TopicsPage } from '@/pages/TopicsPage'
+import { TopicPage } from '@/pages/TopicPage'
 import { HomeRedirect } from '@/components/auth/HomeRedirect'
 
 export function App() {
@@ -34,6 +36,8 @@ export function App() {
           <Route path="/interview" element={<InterviewPage />} />
           <Route path="/provider/:slug/vacancies" element={<VacanciesPage />} />
           <Route path="/provider/:slug/interview" element={<InterviewPage />} />
+          <Route path="/topics" element={<TopicsPage />} />
+          <Route path="/topics/:id" element={<TopicPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/account" element={<AccountPage />} />
         </Route>

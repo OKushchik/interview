@@ -320,8 +320,60 @@ async function generateQuizBatch(apiKey, vacancy, need, existing) {
   return valid
 }
 
+async function generateTopicQuizBatch(apiKey, topic, need, existing) {
+  const prompt = [
+    `Generate EXACTLY ${need} single-answer multiple choice questions that check understanding of the text below.`,
+    'Questions must be answerable from the text (or basic knowledge of its topic).',
+    '',
+    'Hard requirements:',
+    '- Exactly 4 options per question, all four different.',
+    '- Exactly ONE option is correct; the other three must be clearly and verifiably wrong.',
+    '- "correctIndex" is the 0-based index of the correct option; vary its position between questions.',
+    '- "explanation" (1-2 sentences) says why the correct option is right.',
+    '- Write in Ukrainian, keep technical terms and code in English.',
+    avoidRepeatsLine(existing),
+    `Return JSON only with exactly ${need} items:`,
+    '{"questions":[{"question":"...","options":["a","b","c","d"],"correctIndex":0,"explanation":"..."}]}',
+    '',
+    `Topic: ${topic.title}`,
+    'Text:',
+    topic.content.slice(0, 20000),
+  ].join('\n')
+  const parsed = parseLlmJson(await callOpenAI(apiKey, prompt, { json: true }))
+  const source = Array.isArray(parsed.questions) ? parsed.questions : []
+  return source.map(normalizeQuizQuestion).filter(Boolean)
+}
+
 export function createQuestionGenerator(apiKey) {
   return {
+    async generateTopicText(title, description) {
+      requireApiKey(apiKey)
+      const prompt = [
+        'Write an educational article on the topic below for IT specialists preparing for technical interviews.',
+        `Topic: ${title}`,
+        description ? `Description / what to cover: ${description}` : '',
+        '',
+        '- Length: 400-800 words, clear structure with short paragraphs and short headings (plain text, no markdown symbols like # or **).',
+        '- Include key concepts, a practical example and common pitfalls.',
+        '- Write in Ukrainian, keep technical terms and code in English.',
+        'Return only the article text.',
+      ].filter(Boolean).join('\n')
+      return text(await callOpenAI(apiKey, prompt))
+    },
+
+    async generateTopicQuiz(topic, count) {
+      requireApiKey(apiKey)
+      const questions = await collectQuestions(
+        count,
+        (need, existing) => generateTopicQuizBatch(apiKey, topic, need, existing),
+        'topic quiz',
+      )
+      if (questions.length === 0) {
+        throw openAiError('OpenAI returned no usable quiz question')
+      }
+      return questions.map((question, index) => ({ ...question, id: `q${index + 1}` }))
+    },
+
     async generateQuiz(vacancy, count) {
       if (!apiKey) return []
       const questions = await collectQuestions(

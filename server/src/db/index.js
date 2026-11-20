@@ -10,7 +10,7 @@ export const sequelize = new Sequelize(env.databaseUrl, {
   },
 })
 
-const { User, Vacancy, Provider, UserProviderAccess } = initModels(sequelize)
+const { User, Vacancy, Provider, UserProviderAccess, Topic } = initModels(sequelize)
 
 function toUserRow(row) {
   const user = row.get({ plain: true })
@@ -96,6 +96,23 @@ export const db = {
     },
     async destroy({ where }) {
       return UserProviderAccess.destroy({ where })
+    },
+  },
+  Topic: {
+    async findAll({ where, order } = {}) {
+      const rows = await Topic.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async findOne({ where }) {
+      const row = await Topic.findOne({ where })
+      return row ? row.get({ plain: true }) : null
+    },
+    async create(values) {
+      const row = await Topic.create(values)
+      return row.get({ plain: true })
+    },
+    async destroy({ where }) {
+      return Topic.destroy({ where })
     },
   },
   Vacancy: {

@@ -6,6 +6,8 @@ export class Vacancy extends Model {}
 
 export class Provider extends Model {}
 
+export class Topic extends Model {}
+
 export class UserProviderAccess extends Model {}
 
 export function initModels(sequelize) {
@@ -218,6 +220,30 @@ export function initModels(sequelize) {
     },
   )
 
+  Topic.init(
+    {
+      id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+      userId: { type: DataTypes.STRING, allowNull: false },
+      title: { type: DataTypes.STRING, allowNull: false },
+      description: { type: DataTypes.TEXT, allowNull: false, defaultValue: '' },
+      content: { type: DataTypes.TEXT, allowNull: false, defaultValue: '' },
+      quizQuestions: { type: DataTypes.JSONB, allowNull: true },
+      createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+      updatedAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    },
+    {
+      sequelize,
+      tableName: 'topics',
+      modelName: 'Topic',
+      timestamps: true,
+      underscored: true,
+      indexes: [{ fields: ['created_at'] }],
+    },
+  )
+
+  User.hasMany(Topic, { foreignKey: 'userId', onDelete: 'CASCADE' })
+  Topic.belongsTo(User, { foreignKey: 'userId' })
+
   User.hasMany(Vacancy, { foreignKey: 'userId', onDelete: 'CASCADE' })
   Vacancy.belongsTo(User, { foreignKey: 'userId' })
 
@@ -240,5 +266,5 @@ export function initModels(sequelize) {
     otherKey: 'userId',
   })
 
-  return { User, Vacancy, Provider, UserProviderAccess }
+  return { User, Vacancy, Provider, UserProviderAccess, Topic }
 }

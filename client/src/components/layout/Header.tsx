@@ -3,6 +3,7 @@ import { Brain, Sun, Moon, LogOut, Shield, KeyRound } from 'lucide-react'
 import { useThemeStore } from '@/store/themeStore'
 import { useAuthStore } from '@/store/authStore'
 import { Button } from '@/components/ui/Button'
+import { MainNav } from '@/components/layout/MainNav'
 import { providerPath } from '@/utils/paths'
 
 export function Header() {
@@ -74,6 +75,9 @@ export function Header() {
             <span className="hidden sm:inline">Вийти</span>
           </Button>
         </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-3">
+        <MainNav />
       </div>
     </header>
   )
