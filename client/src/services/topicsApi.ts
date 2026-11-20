@@ -1,4 +1,4 @@
-import type { Topic, TopicFormData } from '@/types'
+import type { Topic, TopicFormData, TopicUpdateData } from '@/types'
 import { apiRequest } from './api'
 
 const base = (slug: string) => `/api/providers/${encodeURIComponent(slug)}/topics`
@@ -15,6 +15,13 @@ export const topicsApi = {
   async create(slug: string, form: TopicFormData): Promise<Topic> {
     const data = await apiRequest<{ topic: Topic }>(base(slug), {
       method: 'POST',
+      body: JSON.stringify(form),
+    })
+    return data.topic
+  },
+  async update(slug: string, id: string, form: TopicUpdateData): Promise<Topic> {
+    const data = await apiRequest<{ topic: Topic }>(`${base(slug)}/${encodeURIComponent(id)}`, {
+      method: 'PUT',
       body: JSON.stringify(form),
     })
     return data.topic

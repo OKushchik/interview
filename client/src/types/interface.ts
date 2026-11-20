@@ -289,6 +289,13 @@ export interface Topic {
   createdAt?: string
 }
 
+export interface TopicUpdateData {
+  title: string
+  description: string
+  content: string
+  quizQuestions: QuizDraft[] | null
+}
+
 export interface TopicFormData {
   title: string
   description: string

@@ -175,6 +175,14 @@ export const topicCreateSchema = z.object({
   generateQuestions: z.boolean().optional().default(true),
 })
 
+// Редагування теми: текст і питання передаються повністю, AI не залучається.
+export const topicUpdateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).optional().default(''),
+  content: z.string().trim().min(1).max(TOPIC_CONTENT_MAX),
+  quizQuestions: z.array(quizQuestionSchema).max(50).nullable().optional().default(null),
+})
+
 export function normalizeQuizIds(questions) {
   return questions.map((question, index) => ({ ...question, id: `q${index + 1}` }))
 }

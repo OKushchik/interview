@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
 import { createRequireProviderAccess } from '../middleware/requireProviderAccess.js'
-import { normalizeQuizIds, toTopicDto, topicCreateSchema } from '../services/schemas.js'
+import { normalizeQuizIds, toTopicDto, topicCreateSchema, topicUpdateSchema } from '../services/schemas.js'
 
 /**
  * /api/providers/:slug/topics — теми розділу «Аналіз статей» конкретного провайдера.
@@ -75,6 +75,31 @@ export function createTopicsRouter(db, jwtSecret, generator) {
         quizQuestions: quizQuestions?.length ? quizQuestions : null,
       })
       res.status(201).json({ topic: toTopicDto(row) })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  router.put('/:id', requireAdmin, async (req, res, next) => {
+    try {
+      const parsed = topicUpdateSchema.safeParse(req.body)
+      if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
+        return
+      }
+      const row = await db.Topic.findOne({ where: { id: req.params.id, providerId: req.provider.id } })
+      if (!row) {
+        res.status(404).json({ error: 'Topic not found' })
+        return
+      }
+      const input = parsed.data
+      await row.update({
+        title: input.title,
+        description: input.description,
+        content: input.content,
+        quizQuestions: input.quizQuestions?.length ? normalizeQuizIds(input.quizQuestions) : null,
+      })
+      res.json({ topic: toTopicDto(row) })
     } catch (error) {
       next(error)
     }

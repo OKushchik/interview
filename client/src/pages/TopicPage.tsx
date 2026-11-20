@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, CheckCircle2, Pencil, XCircle } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import type { Topic } from '@/types'
+import type { Topic, TopicUpdateData } from '@/types'
+import { useAuthStore } from '@/store/authStore'
+import { EditTopicModal } from '@/components/modals/EditTopicModal'
 import { topicsApi } from '@/services/topicsApi'
 import { ApiError } from '@/services/api'
 import { providerPath, topicsPath } from '@/utils/paths'
@@ -19,6 +21,11 @@ export function TopicPage() {
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('text')
   const [answers, setAnswers] = useState<Record<string, number>>({})
+  const role = useAuthStore((s) => s.user?.role)
+  const canManage = role === 'super_admin' || role === 'provider_admin'
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!slug || !id) return
@@ -35,6 +42,20 @@ export function TopicPage() {
       cancelled = true
     }
   }, [slug, id])
+
+  const handleSave = async (form: TopicUpdateData) => {
+    if (!slug || !id) return
+    setSaving(true)
+    setSaveError(null)
+    try {
+      setTopic(await topicsApi.update(slug, id, form))
+      setEditing(false)
+    } catch (e) {
+      setSaveError(e instanceof ApiError ? e.message : 'Не вдалося зберегти тему')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const questions = topic?.quizQuestions ?? []
   const correctCount = questions.filter((q) => answers[q.id] === q.correctIndex).length
@@ -97,9 +118,17 @@ export function TopicPage() {
 
     return (
       <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <h2 className="text-3xl font-bold gradient-text mb-3">{topic.title}</h2>
-          {topic.description && <p className="text-muted">{topic.description}</p>}
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-3xl font-bold gradient-text mb-3">{topic.title}</h2>
+            {topic.description && <p className="text-muted">{topic.description}</p>}
+          </div>
+          {canManage && (
+            <Button variant="secondary" size="sm" onClick={() => { setSaveError(null); setEditing(true) }}>
+              <Pencil size={14} />
+              Редагувати
+            </Button>
+          )}
         </div>
         <Card>
           <div className="text-text whitespace-pre-wrap leading-relaxed">{topic.content}</div>
@@ -125,6 +154,16 @@ export function TopicPage() {
         </Link>
         {renderBody()}
       </main>
+      {canManage && topic && (
+        <EditTopicModal
+          topic={topic}
+          isOpen={editing}
+          onClose={() => setEditing(false)}
+          onSubmit={handleSave}
+          isSubmitting={saving}
+          error={saveError}
+        />
+      )}
     </div>
   )
 }
