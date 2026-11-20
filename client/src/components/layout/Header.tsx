@@ -58,9 +58,9 @@ export function Header() {
             <Link
               to="/account"
               className="text-sm text-muted hidden sm:block truncate max-w-[180px] hover:text-text"
-              title={user.email}
+              title={user.isGuest ? 'Гість' : user.email}
             >
-              {user.email}
+              {user.isGuest ? 'Гість' : user.email}
             </Link>
           )}
           <button
