@@ -11,6 +11,7 @@ vi.mock('@/services/authApi', () => ({
     forgotPassword: vi.fn(),
     resetPassword: vi.fn(),
     changeEmail: vi.fn(),
+    changePassword: vi.fn(),
     verifyEmailChange: vi.fn(),
   },
 }))

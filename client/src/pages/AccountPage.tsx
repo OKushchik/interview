@@ -6,11 +6,12 @@ import { useAuthStore } from '@/store/authStore'
 
 export function AccountPage() {
   const user = useAuthStore((s) => s.user)
-  const changeEmail = useAuthStore((s) => s.changeEmail)
+  const changePassword = useAuthStore((s) => s.changePassword)
   const isGuest = Boolean(user?.isGuest)
 
-  const [newEmail, setNewEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -20,13 +21,19 @@ export function AccountPage() {
     setSubmitting(true)
     setError(null)
     setMessage(null)
+    if (newPassword !== confirmPassword) {
+      setError('Паролі не збігаються')
+      setSubmitting(false)
+      return
+    }
     try {
-      await changeEmail(newEmail.trim(), password)
-      setMessage('Перевірте новий email і підтвердіть зміну за лінком у листі')
-      setNewEmail('')
-      setPassword('')
+      await changePassword(currentPassword, newPassword)
+      setMessage('Пароль успішно змінено')
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Не вдалося змінити email')
+      setError(err instanceof Error ? err.message : 'Не вдалося змінити пароль')
     } finally {
       setSubmitting(false)
     }
@@ -53,22 +60,32 @@ export function AccountPage() {
           </p>
         ) : (
         <form className="glass-card rounded-2xl p-6 space-y-4" onSubmit={onSubmit}>
-          <h2 className="font-semibold text-text">Змінити email</h2>
-          <Input
-            label="Новий email"
-            type="email"
-            required
-            value={newEmail}
-            onChange={(e) => setNewEmail(e.target.value)}
-          />
+          <h2 className="font-semibold text-text">Змінити пароль</h2>
           <Input
             label="Поточний пароль"
             type="password"
             required
-            minLength={8}
             autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+          />
+          <Input
+            label="Новий пароль"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+          />
+          <Input
+            label="Повторіть новий пароль"
+            type="password"
+            required
+            minLength={8}
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
           />
           {message && <p className="text-sm text-cyan">{message}</p>}
           {error && (
@@ -77,7 +94,7 @@ export function AccountPage() {
             </p>
           )}
           <Button type="submit" disabled={submitting}>
-            {submitting ? 'Зачекайте…' : 'Надіслати підтвердження'}
+            {submitting ? 'Зачекайте…' : 'Змінити пароль'}
           </Button>
         </form>
         )}

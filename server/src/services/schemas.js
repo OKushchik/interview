@@ -45,6 +45,11 @@ export const changeEmailSchema = z.object({
   password: z.string().min(8),
 })
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+})
+
 const interviewConfigSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),

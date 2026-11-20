@@ -145,6 +145,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     return message
   },
 
+  changePassword: async (currentPassword, newPassword) => {
+    const { message } = await authApi.changePassword(currentPassword, newPassword)
+    return message
+  },
+
   verifyEmailChange: async (token) => {
     set({ error: null })
     try {

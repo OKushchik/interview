@@ -214,6 +214,7 @@ export interface AuthState {
   forgotPassword: (email: string) => Promise<string>
   resetPassword: (token: string, password: string) => Promise<string>
   changeEmail: (newEmail: string, password: string) => Promise<string>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<string>
   verifyEmailChange: (token: string) => Promise<void>
   clearError: () => void
   clearPendingVerification: () => void
