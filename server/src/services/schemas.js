@@ -182,6 +182,7 @@ export function normalizeQuizIds(questions) {
 export function toTopicDto(row) {
   return {
     id: row.id,
+    providerId: row.providerId ?? null,
     title: row.title,
     description: row.description,
     content: row.content,

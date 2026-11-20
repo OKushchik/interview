@@ -115,7 +115,7 @@ export function UsersTab() {
             const locked = u.isGuest || u.id === currentUserId
             const needsProvider = d.role === 'provider_admin' && !d.providerId
             return (
-              <li key={u.id} className="py-4 grid grid-cols-1 lg:grid-cols-[1fr_auto_auto_auto_auto] gap-3 lg:items-end">
+              <li key={u.id} className="py-4 grid grid-cols-1 lg:grid-cols-[1fr_14rem_auto_auto] gap-3 lg:items-center">
                 <div className="min-w-0">
                   <p className="text-sm text-text truncate">{u.email}</p>
                   <div className="flex gap-2 mt-1">
@@ -124,24 +124,24 @@ export function UsersTab() {
                     {!u.emailVerified && <Badge>email не підтверджено</Badge>}
                   </div>
                 </div>
-                <Select
-                  aria-label="Роль"
-                  value={d.role}
-                  options={ROLE_OPTIONS}
-                  disabled={locked}
-                  onChange={(e) => setDraft(u, { role: e.target.value as UserRole })}
-                />
-                {d.role === 'provider_admin' ? (
+                <div className="space-y-2">
                   <Select
-                    aria-label="Провайдер"
-                    value={d.providerId}
-                    options={providerOptions}
+                    aria-label="Роль"
+                    value={d.role}
+                    options={ROLE_OPTIONS}
                     disabled={locked}
-                    onChange={(e) => setDraft(u, { providerId: e.target.value })}
+                    onChange={(e) => setDraft(u, { role: e.target.value as UserRole })}
                   />
-                ) : (
-                  <span className="hidden lg:block w-40" />
-                )}
+                  {d.role === 'provider_admin' && (
+                    <Select
+                      aria-label="Провайдер"
+                      value={d.providerId}
+                      options={providerOptions}
+                      disabled={locked}
+                      onChange={(e) => setDraft(u, { providerId: e.target.value })}
+                    />
+                  )}
+                </div>
                 <Button
                   size="sm"
                   onClick={() => save(u)}

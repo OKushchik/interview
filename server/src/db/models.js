@@ -224,6 +224,7 @@ export function initModels(sequelize) {
     {
       id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
       userId: { type: DataTypes.STRING, allowNull: false },
+      providerId: { type: DataTypes.STRING, allowNull: true },
       title: { type: DataTypes.STRING, allowNull: false },
       description: { type: DataTypes.TEXT, allowNull: false, defaultValue: '' },
       content: { type: DataTypes.TEXT, allowNull: false, defaultValue: '' },
@@ -237,9 +238,12 @@ export function initModels(sequelize) {
       modelName: 'Topic',
       timestamps: true,
       underscored: true,
-      indexes: [{ fields: ['created_at'] }],
+      indexes: [{ fields: ['provider_id', 'created_at'] }],
     },
   )
+
+  Provider.hasMany(Topic, { foreignKey: 'providerId', onDelete: 'CASCADE' })
+  Topic.belongsTo(Provider, { foreignKey: 'providerId' })
 
   User.hasMany(Topic, { foreignKey: 'userId', onDelete: 'CASCADE' })
   Topic.belongsTo(User, { foreignKey: 'userId' })

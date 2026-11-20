@@ -37,7 +37,8 @@ export function App() {
           <Route path="/provider/:slug/vacancies" element={<VacanciesPage />} />
           <Route path="/provider/:slug/interview" element={<InterviewPage />} />
           <Route path="/topics" element={<TopicsPage />} />
-          <Route path="/topics/:id" element={<TopicPage />} />
+          <Route path="/provider/:slug/topics" element={<TopicsPage />} />
+          <Route path="/provider/:slug/topics/:id" element={<TopicPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/account" element={<AccountPage />} />
         </Route>

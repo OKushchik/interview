@@ -50,9 +50,9 @@ async function main() {
   )
   app.use('/api/providers', createProvidersRouter(db, env.jwtSecret))
   app.use('/api/providers/:slug/vacancies', createVacanciesRouter(db, env.jwtSecret, generator))
-  app.use('/api/providers/:slug/access', createAccessRouter(db, env.jwtSecret))
+  app.use('/api/providers/:slug/topics', createTopicsRouter(db, env.jwtSecret, generator))
+  app.use('/api/providers/:slug/access',createAccessRouter(db, env.jwtSecret))
   app.use('/api/users', createUsersRouter(db, env.jwtSecret))
-  app.use('/api/topics', createTopicsRouter(db, env.jwtSecret, generator))
   app.use('/api/interview', createInterviewRouter(db, env.jwtSecret, generator))
 
   app.use((_req, res) => {

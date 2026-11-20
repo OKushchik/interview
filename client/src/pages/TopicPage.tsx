@@ -4,7 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import type { Topic } from '@/types'
 import { topicsApi } from '@/services/topicsApi'
 import { ApiError } from '@/services/api'
-import { topicsPath } from '@/utils/paths'
+import { providerPath, topicsPath } from '@/utils/paths'
 import { Header } from '@/components/layout/Header'
 import { QuizInterview } from '@/components/interview/QuizInterview'
 import { Card } from '@/components/ui/Card'
@@ -14,17 +14,17 @@ type View = 'text' | 'quiz' | 'result'
 
 /** Сторінка теми: текст, тест і результат (результат не зберігається). */
 export function TopicPage() {
-  const { id } = useParams()
+  const { slug, id } = useParams()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('text')
   const [answers, setAnswers] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    if (!id) return
+    if (!slug || !id) return
     let cancelled = false
     topicsApi
-      .get(id)
+      .get(slug, id)
       .then((t) => {
         if (!cancelled) setTopic(t)
       })
@@ -34,7 +34,7 @@ export function TopicPage() {
     return () => {
       cancelled = true
     }
-  }, [id])
+  }, [slug, id])
 
   const questions = topic?.quizQuestions ?? []
   const correctCount = questions.filter((q) => answers[q.id] === q.correctIndex).length
@@ -119,7 +119,7 @@ export function TopicPage() {
     <div className="min-h-screen">
       <Header />
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Link to={topicsPath} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text mb-6">
+        <Link to={slug ? providerPath(slug, 'topics') : topicsPath} className="inline-flex items-center gap-1.5 text-sm text-muted hover:text-text mb-6">
           <ArrowLeft size={16} />
           До списку тем
         </Link>

@@ -9,9 +9,10 @@ const LINK_BASE = 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-med
 export function MainNav() {
   const first = useAuthStore((s) => s.user?.accessibleProviders?.[0])
   const vacanciesTo = first ? providerPath(first.slug, 'vacancies') : vacanciesPath
+  const topicsTo = first ? providerPath(first.slug, 'topics') : topicsPath
 
   const { pathname } = useLocation()
-  const inTopics = pathname.startsWith(topicsPath)
+  const inTopics = pathname.startsWith(topicsPath) || /^\/provider\/[^/]+\/topics/.test(pathname)
   const inVacancies = /^(\/vacancies|\/provider\/[^/]+\/(vacancies|interview))/.test(pathname) || pathname === '/interview'
 
   const linkClass = (active: boolean) =>
@@ -23,7 +24,7 @@ export function MainNav() {
         <Briefcase size={16} />
         Вакансії
       </Link>
-      <Link to={topicsPath} className={linkClass(inTopics)}>
+      <Link to={topicsTo} className={linkClass(inTopics)}>
         <FileText size={16} />
         Аналіз статей
       </Link>

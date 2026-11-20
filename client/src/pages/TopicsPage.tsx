@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import type { Topic, TopicFormData } from '@/types'
 import { useAuthStore } from '@/store/authStore'
 import { topicsApi } from '@/services/topicsApi'
 import { ApiError } from '@/services/api'
-import { topicPath } from '@/utils/paths'
+import { providerPath, topicPath } from '@/utils/paths'
+import { ProviderSelect } from '@/components/vacancies/ProviderSelect'
+import { NoProviderAccess } from '@/components/vacancies/NoProviderAccess'
 import { Header } from '@/components/layout/Header'
 import { TopicCard } from '@/components/topics/TopicCard'
 import { CreateTopicModal } from '@/components/modals/CreateTopicModal'
@@ -15,11 +17,14 @@ import { Modal } from '@/components/ui/Modal'
 /** Аналіз статей: список тем. Створювати й видаляти можуть лише адміни. */
 export function TopicsPage() {
   const navigate = useNavigate()
+  const { slug } = useParams()
+  const providers = useAuthStore((s) => s.user?.accessibleProviders) ?? []
   const role = useAuthStore((s) => s.user?.role)
-  const canManage = role === 'super_admin' || role === 'provider_admin'
+  const canManage = Boolean(slug) && (role === 'super_admin' || role === 'provider_admin')
 
   const [topics, setTopics] = useState<Topic[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(Boolean(slug))
+  const [forbidden, setForbidden] = useState(false)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [showCreate, setShowCreate] = useState(false)
   const [creating, setCreating] = useState(false)
@@ -29,14 +34,24 @@ export function TopicsPage() {
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (!slug) return
     let cancelled = false
+    setLoading(true)
+    setForbidden(false)
+    setLoadError(null)
+    setTopics([])
     topicsApi
-      .list()
+      .list(slug)
       .then((list) => {
         if (!cancelled) setTopics(list)
       })
       .catch((error) => {
-        if (!cancelled) setLoadError(error instanceof ApiError ? error.message : 'Не вдалося завантажити теми')
+        if (cancelled) return
+        if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+          setForbidden(true)
+          return
+        }
+        setLoadError(error instanceof ApiError ? error.message : 'Не вдалося завантажити теми')
       })
       .finally(() => {
         if (!cancelled) setLoading(false)
@@ -44,13 +59,14 @@ export function TopicsPage() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [slug])
 
   const handleCreate = async (form: TopicFormData) => {
     setCreating(true)
     setCreateError(null)
     try {
-      const topic = await topicsApi.create(form)
+      if (!slug) return
+      const topic = await topicsApi.create(slug, form)
       setTopics((prev) => [topic, ...prev])
       setShowCreate(false)
     } catch (error) {
@@ -61,11 +77,11 @@ export function TopicsPage() {
   }
 
   const handleDelete = async () => {
-    if (!deleting) return
+    if (!slug || !deleting) return
     setDeleteBusy(true)
     setDeleteError(null)
     try {
-      await topicsApi.remove(deleting.id)
+      await topicsApi.remove(slug, deleting.id)
       setTopics((prev) => prev.filter((t) => t.id !== deleting.id))
       setDeleting(null)
     } catch (error) {
@@ -76,6 +92,8 @@ export function TopicsPage() {
   }
 
   const renderContent = () => {
+    if (!slug) return <NoProviderAccess backTo="/vacancies" />
+    if (forbidden) return <NoProviderAccess backTo={providers[0] ? providerPath(providers[0].slug, 'topics') : '/vacancies'} />
     if (loading) return <p className="text-center text-muted mb-12">Завантаження тем…</p>
     if (loadError) return <p className="text-center text-red-400 mb-12">{loadError}</p>
     if (topics.length === 0) return <p className="text-center text-muted mb-12">Тем поки немає.</p>
@@ -85,7 +103,7 @@ export function TopicsPage() {
           <TopicCard
             key={topic.id}
             topic={topic}
-            onOpen={(t) => navigate(topicPath(t.id))}
+            onOpen={(t) => navigate(topicPath(slug, t.id))}
             onDelete={canManage ? (t) => { setDeleteError(null); setDeleting(t) } : undefined}
           />
         ))}
@@ -104,6 +122,8 @@ export function TopicsPage() {
             Читайте матеріали за темами та перевіряйте себе в тесті
           </p>
         </div>
+
+        {slug && providers.length > 0 && <ProviderSelect providers={providers} value={slug} section="topics" />}
 
         {renderContent()}
 

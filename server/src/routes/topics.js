@@ -1,22 +1,28 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
+import { createRequireProviderAccess } from '../middleware/requireProviderAccess.js'
 import { normalizeQuizIds, toTopicDto, topicCreateSchema } from '../services/schemas.js'
 
 /**
- * /api/topics — теми розділу «Аналіз статей».
- * Читати й проходити тест може будь-який автентифікований користувач,
+ * /api/providers/:slug/topics — теми розділу «Аналіз статей» конкретного провайдера.
+ * Читати й проходити тест може користувач з доступом до провайдера,
  * створювати/видаляти — лише super_admin і provider_admin.
+ * provider_id береться з req.provider, а не з тіла запиту.
  */
 export function createTopicsRouter(db, jwtSecret, generator) {
-  const router = Router()
+  const router = Router({ mergeParams: true })
   const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
 
   router.use(createRequireAuth(jwtSecret))
+  router.use(createRequireProviderAccess(db))
 
-  router.get('/', async (_req, res, next) => {
+  router.get('/', async (req, res, next) => {
     try {
-      const rows = await db.Topic.findAll({ order: [['createdAt', 'DESC']] })
+      const rows = await db.Topic.findAll({
+        where: { providerId: req.provider.id },
+        order: [['createdAt', 'DESC']],
+      })
       res.json({ topics: rows.map(toTopicDto) })
     } catch (error) {
       next(error)
@@ -25,7 +31,7 @@ export function createTopicsRouter(db, jwtSecret, generator) {
 
   router.get('/:id', async (req, res, next) => {
     try {
-      const row = await db.Topic.findOne({ where: { id: req.params.id } })
+      const row = await db.Topic.findOne({ where: { id: req.params.id, providerId: req.provider.id } })
       if (!row) {
         res.status(404).json({ error: 'Topic not found' })
         return
@@ -62,6 +68,7 @@ export function createTopicsRouter(db, jwtSecret, generator) {
 
       const row = await db.Topic.create({
         userId: req.user.id,
+        providerId: req.provider.id,
         title: input.title,
         description: input.description,
         content,
@@ -75,7 +82,7 @@ export function createTopicsRouter(db, jwtSecret, generator) {
 
   router.delete('/:id', requireAdmin, async (req, res, next) => {
     try {
-      const deleted = await db.Topic.destroy({ where: { id: req.params.id } })
+      const deleted = await db.Topic.destroy({ where: { id: req.params.id, providerId: req.provider.id } })
       if (!deleted) {
         res.status(404).json({ error: 'Topic not found' })
         return
