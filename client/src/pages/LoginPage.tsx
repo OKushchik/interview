@@ -77,7 +77,7 @@ export function LoginPage() {
     try {
       if (mode === 'login') {
         await login(email.trim(), password)
-        navigate('/vacancies', { replace: true })
+        navigate('/', { replace: true })
       } else {
         await register(email.trim(), password)
       }
@@ -94,7 +94,7 @@ export function LoginPage() {
     setSubmitting(true)
     try {
       await loginAsGuest()
-      navigate('/vacancies', { replace: true })
+      navigate('/', { replace: true })
     } catch {
       // error already in store
     } finally {

@@ -26,6 +26,7 @@ export async function publicUser(db, user) {
     id: c.id,
     name: c.name,
     slug: c.slug,
+    canManage: c.canManage,
   }))
   return {
     id: user.id,

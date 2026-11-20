@@ -11,7 +11,7 @@ const sampleRow = {
   description: '',
   quizQuestions: null,
   botQuestions: null,
-  codingTask: null,
+  codingTasks: null,
   createdAt: new Date('2026-01-01'),
   updatedAt: new Date('2026-01-01'),
 }

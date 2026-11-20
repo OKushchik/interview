@@ -1,16 +1,20 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useInterviewStore } from '@/store/interviewStore'
+import { useVacanciesPath } from '@/hooks/useVacanciesPath'
 import { generateReport } from '@/services/aiService'
 import { Header } from '@/components/layout/Header'
 import { QuizInterview } from '@/components/interview/QuizInterview'
 import { BotInterview } from '@/components/interview/BotInterview'
 import { CodingSection } from '@/components/interview/CodingSection'
 import type { InterviewPhase } from '@/types'
+import { providerPath } from '@/utils/paths'
 
 export function InterviewPage() {
   const navigate = useNavigate()
+  const { slug } = useParams()
+  const backPath = useVacanciesPath()
   const {
     currentSession,
     saveQuizAnswer,
@@ -22,14 +26,15 @@ export function InterviewPage() {
   const [phase, setPhase] = useState<InterviewPhase>('interview')
   const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({})
   const [botAnswers, setBotAnswers] = useState<Record<string, { answer: string; feedback?: string }>>({})
-  const [codingCode, setCodingCode] = useState('')
+  const [codingCodes, setCodingCodes] = useState<Record<string, string>>({})
 
   if (!currentSession) {
-    navigate('/vacancies')
+    navigate(slug ? providerPath(slug, 'vacancies') : backPath)
     return null
   }
 
-  const { vacancy, config, quizQuestions, botQuestions, codingTask } = currentSession
+  const { vacancy, config, quizQuestions, botQuestions, codingTasks } = currentSession
+  const hasCoding = config.enableCoding && codingTasks.length > 0
   const hasQuestions = config.type === 'quiz' ? quizQuestions.length > 0 : botQuestions.length > 0
 
   const finishAndGenerateReport = async () => {
@@ -46,7 +51,7 @@ export function InterviewPage() {
   }
 
   const handleQuizComplete = () => {
-    if (config.enableCoding && codingTask) {
+    if (hasCoding) {
       setPhase('coding')
     } else {
       finishAndGenerateReport()
@@ -54,7 +59,7 @@ export function InterviewPage() {
   }
 
   const handleBotComplete = () => {
-    if (config.enableCoding && codingTask) {
+    if (hasCoding) {
       setPhase('coding')
     } else {
       finishAndGenerateReport()
@@ -62,7 +67,9 @@ export function InterviewPage() {
   }
 
   const handleCodingComplete = () => {
-    saveCodingAnswer({ taskId: codingTask!.id, code: codingCode || codingTask!.starterCode })
+    codingTasks.forEach((task) => {
+      saveCodingAnswer({ taskId: task.id, code: codingCodes[task.id] || task.starterCode })
+    })
     finishAndGenerateReport()
   }
 
@@ -87,15 +94,15 @@ export function InterviewPage() {
           </div>
         )}
 
-        {phase === 'interview' && !hasQuestions && !codingTask && (
+        {phase === 'interview' && !hasQuestions && !hasCoding && (
           <p className="text-center text-muted py-16">Для цієї вакансії немає питань.</p>
         )}
 
-        {phase === 'interview' && !hasQuestions && codingTask && (
+        {phase === 'interview' && !hasQuestions && hasCoding && (
           <CodingSection
-            task={codingTask}
-            code={codingCode}
-            onCodeChange={setCodingCode}
+            tasks={codingTasks}
+            codes={codingCodes}
+            onCodeChange={(taskId, code) => setCodingCodes((prev) => ({ ...prev, [taskId]: code }))}
             onComplete={handleCodingComplete}
           />
         )}
@@ -124,11 +131,11 @@ export function InterviewPage() {
           />
         )}
 
-        {phase === 'coding' && codingTask && (
+        {phase === 'coding' && hasCoding && (
           <CodingSection
-            task={codingTask}
-            code={codingCode}
-            onCodeChange={setCodingCode}
+            tasks={codingTasks}
+            codes={codingCodes}
+            onCodeChange={(taskId, code) => setCodingCodes((prev) => ({ ...prev, [taskId]: code }))}
             onComplete={handleCodingComplete}
           />
         )}

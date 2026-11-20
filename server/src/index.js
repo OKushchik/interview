@@ -9,6 +9,8 @@ import { createInterviewRouter } from './routes/interview.js'
 import { createProvidersRouter } from './routes/providers.js'
 import { createUsersRouter } from './routes/users.js'
 import { createAccessRouter } from './routes/access.js'
+import { createTopicsRouter } from './routes/topics.js'
+import { createTestResultsRouter } from './routes/testResults.js'
 const { env } = await import('./config.js')
 const { db, initDatabase } = await import('./db/index.js')
 const { createQuestionGenerator } = await import('./services/openaiService.js')
@@ -49,7 +51,9 @@ async function main() {
   )
   app.use('/api/providers', createProvidersRouter(db, env.jwtSecret))
   app.use('/api/providers/:slug/vacancies', createVacanciesRouter(db, env.jwtSecret, generator))
-  app.use('/api/providers/:slug/access', createAccessRouter(db, env.jwtSecret))
+  app.use('/api/providers/:slug/topics', createTopicsRouter(db, env.jwtSecret, generator))
+  app.use('/api/providers/:slug/access',createAccessRouter(db, env.jwtSecret))
+  app.use('/api/test-results', createTestResultsRouter(db, env.jwtSecret))
   app.use('/api/users', createUsersRouter(db, env.jwtSecret))
   app.use('/api/interview', createInterviewRouter(db, env.jwtSecret, generator))
 

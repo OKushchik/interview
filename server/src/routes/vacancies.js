@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
-import { createRequireRole } from '../middleware/requireRole.js'
-import { createRequireProviderAccess } from '../middleware/requireProviderAccess.js'
+import { createRequireProviderAccess, requireProviderManage } from '../middleware/requireProviderAccess.js'
 import { prepareSchema, vacancyCreateSchema, vacancyPatchSchema } from '../services/schemas.js'
 import {
   createVacancy,
@@ -19,7 +18,8 @@ import { prepareInterview } from '../services/prepareInterview.js'
  */
 export function createVacanciesRouter(db, jwtSecret, generator) {
   const router = Router({ mergeParams: true })
-  const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
+  // Запис лише з рівнем 'manage' для цього провайдера (provider_admin «лише перегляд» — 403).
+  const requireAdmin = requireProviderManage
 
   router.use(createRequireAuth(jwtSecret))
   router.use(createRequireProviderAccess(db))
@@ -40,7 +40,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await createVacancy(db, req.user.id, req.provider.id, parsed.data)
+      const vacancy = await createVacancy(db, req.user.id, req.provider.id, parsed.data, generator)
       res.status(201).json({ vacancy })
     } catch (error) {
       next(error)
@@ -67,7 +67,7 @@ export function createVacanciesRouter(db, jwtSecret, generator) {
         res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
         return
       }
-      const vacancy = await patchVacancy(db, req.params.id, req.provider.id, parsed.data)
+      const vacancy = await patchVacancy(db, req.params.id, req.provider.id, parsed.data, generator)
       if (!vacancy) {
         res.status(404).json({ error: 'Vacancy not found' })
         return

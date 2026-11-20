@@ -8,6 +8,7 @@ import { createUsersRouter } from './users.js'
 import { createAccessRouter } from './access.js'
 import { createVacanciesRouter } from './vacancies.js'
 import { createInterviewRouter } from './interview.js'
+import { createTestResultsRouter } from './testResults.js'
 
 const SECRET = 'test-secret'
 
@@ -45,13 +46,16 @@ function createFakeDb() {
     Provider: table([]),
     UserProviderAccess: table([]),
     Vacancy: table([]),
+    TestResult: table([]),
+    InterviewResult: table([]),
   }
 }
 
 const generator = {
   generateQuiz: async () => [{ id: 'q1', question: 'Q?', options: ['a', 'b', 'c', 'd'], correctIndex: 0 }],
   generateBot: async () => [{ id: 'b1', question: 'Q?' }],
-  generateCoding: async () => ({ id: 'c', title: 't', description: 'd', starterCode: '' }),
+  generateReport: async () => ({ score: 7, maxScore: 10, sections: {}, strengths: [], weaknesses: [], summary: 's' }),
+  generateCoding: async () => [{ id: 'c', title: 't', description: 'd', starterCode: '' }],
 }
 
 describe('multitenant API', () => {
@@ -76,7 +80,7 @@ describe('multitenant API', () => {
 
   before(async () => {
     const mk = async (key, role, providerId = null, extra = {}) => {
-      const u = await db.User.create({ email: `${key}@x.io`, role, providerId, isGuest: false, ...extra })
+      const u = await db.User.create({ email: `${key.toLowerCase()}@x.io`, role, providerId, isGuest: false, ...extra })
       cookies[key] = signAuthToken(u, SECRET)
       return u
     }
@@ -103,6 +107,7 @@ describe('multitenant API', () => {
     app.use('/api/providers/:slug/vacancies', createVacanciesRouter(db, SECRET, generator))
     app.use('/api/providers/:slug/access', createAccessRouter(db, SECRET))
     app.use('/api/users', createUsersRouter(db, SECRET))
+    app.use('/api/test-results', createTestResultsRouter(db, SECRET))
     app.use('/api/interview', createInterviewRouter(db, SECRET, generator))
     app.use((err, _req, res, _next) => res.status(err.statusCode || 500).json({ error: err.message }))
     await new Promise((r) => {
@@ -225,10 +230,106 @@ describe('multitenant API', () => {
       assert.equal(res.status, 201)
     })
 
+    it('grants access by email', async () => {
+      const grant = await call('adminA', 'POST', '/api/providers/acme/access', { email: 'USERNONE@x.io' })
+      assert.equal(grant.status, 201)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 200)
+      assert.equal((await call('adminA', 'POST', '/api/providers/acme/access', { email: 'nobody@x.io' })).status, 404)
+      await call('adminA', 'DELETE', `/api/providers/acme/access/${ids.userNone.id}`)
+    })
+
+    it('provider_admin of another provider can be given view-only access', async () => {
+      await call('root', 'PATCH', `/api/users/${ids.userNone.id}`, { role: 'provider_admin', providerId: ids.b.id })
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 403)
+
+      const grant = await call('adminA', 'POST', '/api/providers/acme/access', { userId: ids.userNone.id })
+      assert.equal(grant.status, 201)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 200)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/access')).status, 403)
+      const write = await call('userNone', 'POST', '/api/providers/acme/vacancies', { title: 'X', level: 'middle', skills: ['TS'] })
+      assert.equal(write.status, 403)
+
+      // власні права на свій провайдер не зачіпаються і не відкликаються через доступи
+      assert.equal((await call('adminA', 'POST', '/api/providers/acme/access', { userId: ids.adminA.id })).status, 400)
+      assert.equal((await call('root', 'DELETE', `/api/providers/beta/access/${ids.userNone.id}`)).status, 404)
+
+      assert.equal((await call('adminA', 'DELETE', `/api/providers/acme/access/${ids.userNone.id}`)).status, 204)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 403)
+      await call('root', 'PATCH', `/api/users/${ids.userNone.id}`, { role: 'user' })
+    })
+
     it('access cannot be granted to admins or guests', async () => {
       assert.equal((await call('root', 'POST', '/api/providers/acme/access', { userId: ids.adminA.id })).status, 400)
       assert.equal((await call('root', 'POST', '/api/providers/acme/access', { userId: ids.guest.id })).status, 400)
       assert.equal((await call('root', 'POST', '/api/providers/acme/access', { userId: 'nope' })).status, 404)
+    })
+  })
+
+  describe('team results', () => {
+    it('admin sees only own providers, sorted by best score; users are denied', async () => {
+      const mkRes = (userId, provider, score, correctCount) =>
+        db.TestResult.create({
+          userId, providerId: provider.id, providerName: provider.name, topicTitle: 'T',
+          score, correctCount, total: 10, details: [],
+        })
+      await mkRes(ids.userA.id, ids.a, 40, 4)
+      await mkRes(ids.userNone.id, ids.a, 90, 9)
+      await mkRes(ids.userA.id, ids.a, 70, 7)
+      await mkRes(ids.userA.id, ids.b, 100, 10)
+
+      const res = await call('adminA', 'GET', '/api/test-results/team')
+      assert.equal(res.status, 200)
+      assert.deepEqual(res.body.results.map((r) => r.score), [90, 70, 40])
+      assert.ok(res.body.results.every((r) => r.providerId === ids.a.id))
+      assert.equal(res.body.results[0].email, 'usernone@x.io')
+
+      assert.equal((await call('adminA', 'GET', `/api/test-results/team?providerId=${ids.b.id}`)).status, 403)
+      assert.equal((await call('userA', 'GET', '/api/test-results/team')).status, 403)
+
+      const all = await call('root', 'GET', '/api/test-results/team')
+      assert.deepEqual(all.body.results.map((r) => r.score), [100, 90, 70, 40])
+    })
+
+    it('report generation saves the result from the DB vacancy, not from the request body', async () => {
+      const before = db.InterviewResult.rows.length
+      const body = (v) => ({ vacancy: { ...v, description: '', providerId: ids.b.id }, config: { type: 'quiz', questionCount: 1, enableCoding: false } })
+      const ok = await call('userA', 'POST', '/api/interview/report', body(ids.vacA))
+      assert.equal(ok.status, 200)
+      const saved = db.InterviewResult.rows.at(-1)
+      assert.equal(db.InterviewResult.rows.length, before + 1)
+      assert.equal(saved.providerId, ids.a.id) // з БД, хоча в тілі вказано чужого провайдера
+      assert.equal(saved.score, 70)
+      // користувач без доступу до провайдера вакансії: звіт є, результат не зберігається
+      const foreign = await call('userNone', 'POST', '/api/interview/report', body(ids.vacA))
+      assert.equal(foreign.status, 200)
+      assert.equal(db.InterviewResult.rows.length, before + 1)
+    })
+
+    it('own interview results contain the report and only own rows', async () => {
+      const res = await call('userA', 'GET', '/api/test-results/interviews')
+      assert.equal(res.status, 200)
+      assert.ok(res.body.results.length > 0)
+      assert.ok(res.body.results.every((r) => r.userId === ids.userA.id && r.report))
+      assert.equal((await call(null, 'GET', '/api/test-results/interviews')).status, 401)
+      assert.equal((await call('guest', 'GET', '/api/test-results/interviews')).status, 403)
+      assert.equal((await call('guest', 'GET', '/api/test-results')).status, 403)
+    })
+
+    it('interview results: same scoping and sorting', async () => {
+      const mk = (userId, provider, score) =>
+        db.InterviewResult.create({
+          userId, providerId: provider.id, providerName: provider.name, vacancyTitle: 'FE', score, report: {},
+        })
+      await mk(ids.userA.id, ids.a, 55)
+      await mk(ids.userNone.id, ids.a, 80)
+      await mk(ids.userA.id, ids.b, 99)
+
+      const res = await call('adminA', 'GET', '/api/test-results/team/interviews')
+      assert.equal(res.status, 200)
+      assert.deepEqual(res.body.results.map((r) => r.score), [80, 70, 55]) // 70 — з тесту збереження звіту
+      assert.ok(!('report' in res.body.results[0]))
+      assert.equal((await call('userA', 'GET', '/api/test-results/team/interviews')).status, 403)
+      assert.equal((await call('adminA', 'GET', `/api/test-results/team/interviews?providerId=${ids.b.id}`)).status, 403)
     })
   })
 

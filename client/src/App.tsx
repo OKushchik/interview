@@ -8,8 +8,15 @@ import { VerifyEmailChangePage } from '@/pages/VerifyEmailChangePage'
 import { ForgotPasswordPage } from '@/pages/ForgotPasswordPage'
 import { ResetPasswordPage } from '@/pages/ResetPasswordPage'
 import { AccountPage } from '@/pages/AccountPage'
+import { AnalysisPage } from '@/pages/AnalysisPage'
+import { ResultsPage } from '@/pages/ResultsPage'
 import { ProtectedRoute } from '@/components/auth/ProtectedRoute'
 import { GuestRoute } from '@/components/auth/GuestRoute'
+import { AdminPage } from '@/pages/AdminPage'
+import { ProviderAccessPage } from '@/pages/ProviderAccessPage'
+import { TopicsPage } from '@/pages/TopicsPage'
+import { TopicPage } from '@/pages/TopicPage'
+import { HomeRedirect } from '@/components/auth/HomeRedirect'
 
 export function App() {
   return (
@@ -25,14 +32,30 @@ export function App() {
         </Route>
 
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Navigate to="/vacancies" replace />} />
+          <Route path="/" element={<HomeRedirect />} />
+          {/* Без провайдера: мок-вакансії */}
           <Route path="/vacancies" element={<VacanciesPage />} />
           <Route path="/interview" element={<InterviewPage />} />
+          <Route path="/provider/:slug/vacancies" element={<VacanciesPage />} />
+          <Route path="/provider/:slug/interview" element={<InterviewPage />} />
+          <Route path="/topics" element={<TopicsPage />} />
+          <Route path="/provider/:slug/topics" element={<TopicsPage />} />
+          <Route path="/provider/:slug/topics/:id" element={<TopicPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/analysis" element={<AnalysisPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/vacancies" replace />} />
+        <Route element={<ProtectedRoute roles={['super_admin']} />}>
+          <Route path="/admin" element={<AdminPage />} />
+        </Route>
+
+        <Route element={<ProtectedRoute roles={['super_admin', 'provider_admin']} />}>
+          <Route path="/provider/:slug/access" element={<ProviderAccessPage />} />
+          <Route path="/results" element={<ResultsPage />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
   )

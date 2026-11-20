@@ -35,14 +35,43 @@ const reportSchema = z.object({
     type: z.enum(['quiz', 'bot']),
     questionCount: z.number(),
     enableCoding: z.boolean(),
+    codingCount: z.number().optional(),
   }),
   quizQuestions: z.array(z.any()).default([]),
   botQuestions: z.array(z.any()).default([]),
-  codingTask: z.any().optional(),
+  codingTasks: z.array(z.any()).default([]),
   quizAnswers: z.array(z.any()).default([]),
   botAnswers: z.array(z.any()).default([]),
-  codingAnswer: z.any().optional(),
+  codingAnswers: z.array(z.any()).default([]),
 })
+
+/**
+ * Зберігає результат співбесіди для адмінського огляду. Провайдер береться з вакансії в БД
+ * (а не з тіла запиту) і лише якщо користувач має до нього доступ; помилка збереження звіт не блокує.
+ */
+async function saveInterviewResult(db, userId, vacancyId, report) {
+  try {
+    const user = await db.User.findOne({ where: { id: userId } })
+    if (!user || user.isGuest) return
+    const vacancy = await db.Vacancy.findOne({ where: { id: vacancyId } })
+    if (!vacancy?.providerId) return
+    const provider = await db.Provider.findOne({ where: { id: vacancy.providerId } })
+    if (!provider || !(await canAccessProvider(db, user, provider))) return
+    const max = Number(report?.maxScore) || 0
+    await db.InterviewResult.create({
+      userId,
+      vacancyId: vacancy.id,
+      providerId: provider.id,
+      vacancyTitle: vacancy.title,
+      providerName: provider.name,
+      level: vacancy.level ?? null,
+      score: max > 0 ? Math.round((Number(report.score) / max) * 100) : 0,
+      report,
+    })
+  } catch (error) {
+    console.error('Failed to save interview result:', error.message)
+  }
+}
 
 export function createInterviewRouter(db, jwtSecret, generator) {
   const router = Router()
@@ -120,11 +149,12 @@ export function createInterviewRouter(db, jwtSecret, generator) {
           ...parsed.data.vacancy,
           quizQuestions: null,
           botQuestions: null,
-          codingTask: null,
+          codingTasks: null,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
       })
+      await saveInterviewResult(db, req.user.id, parsed.data.vacancy.id, report)
       res.json({ report })
     } catch (error) {
       next(error)

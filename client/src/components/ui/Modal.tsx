@@ -1,19 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import type { ModalSize } from '@/types'
+import { MODAL_SIZES } from '@/types'
 
 interface ModalProps {
   isOpen: boolean
   onClose: () => void
   title: string
   children: ReactNode
-  size?: 'md' | 'lg' | 'xl'
-}
-
-const sizes = {
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-2xl',
+  size?: ModalSize
 }
 
 export function Modal({ isOpen, onClose, title, children, size = 'lg' }: ModalProps) {
@@ -33,7 +29,7 @@ export function Modal({ isOpen, onClose, title, children, size = 'lg' }: ModalPr
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', duration: 0.4 }}
-            className={`relative w-full ${sizes[size]} glass-card rounded-2xl p-6 shadow-2xl`}
+            className={`relative w-full ${MODAL_SIZES[size]} glass-card rounded-2xl p-6 shadow-2xl max-h-[calc(100vh-2rem)] overflow-y-auto`}
           >
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold gradient-text">{title}</h2>

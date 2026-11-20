@@ -7,22 +7,53 @@ export interface Vacancy {
   level: SeniorityLevel
   skills: string[]
   description: string
-  isCustom?: boolean
   quizQuestions?: QuizQuestion[] | null
   botQuestions?: BotQuestion[] | null
-  codingTask?: CodingTask | null
+  codingTasks?: CodingTask[] | null
+  /** Збережена конфігурація співбесіди; null — користувач налаштовує сам. */
+  interviewConfig?: InterviewConfig | null
 }
 
 export interface VacancyFormData {
   title: string
   level: SeniorityLevel
   skills: string[]
+  interviewConfig?: InterviewConfig | null
+  /** Питання, введені вручну (створення вакансії без AI). */
+  quizQuestions?: QuizDraft[] | null
+  botQuestions?: BotDraft[] | null
+  codingTasks?: CodingDraft[] | null
+}
+
+export interface QuizDraft {
+  question: string
+  options: string[]
+  correctIndex: number
+  explanation?: string
+}
+
+export interface BotDraft {
+  question: string
+}
+
+export interface CodingDraft {
+  title: string
+  description: string
+  starterCode: string
+}
+
+export interface ManualDrafts {
+  quiz: QuizDraft[]
+  bot: BotDraft[]
+  coding: CodingDraft[]
 }
 
 export interface InterviewConfig {
   type: InterviewType
   questionCount: number
   enableCoding: boolean
+  /** Кількість завдань з онлайн кодингу (0–20), діє лише коли enableCoding. */
+  codingCount: number
 }
 
 export interface QuizQuestion {
@@ -36,6 +67,8 @@ export interface QuizQuestion {
 export interface BotQuestion {
   id: string
   question: string
+  /** Еталонна відповідь (є у готових питань, наприклад мокових). */
+  answer?: string
 }
 
 export interface CodingTask {
@@ -66,10 +99,10 @@ export interface InterviewSession {
   config: InterviewConfig
   quizQuestions: QuizQuestion[]
   botQuestions: BotQuestion[]
-  codingTask?: CodingTask
+  codingTasks: CodingTask[]
   quizAnswers: QuizAnswer[]
   botAnswers: BotAnswer[]
-  codingAnswer?: CodingAnswer
+  codingAnswers: CodingAnswer[]
 }
 
 export interface QuizReportDetail {
@@ -130,6 +163,8 @@ export interface Provider {
   id: string
   name: string
   slug: string
+  /** false — доступ лише для перегляду. */
+  canManage?: boolean
 }
 
 export interface AuthUser {
@@ -179,18 +214,19 @@ export interface AuthState {
   forgotPassword: (email: string) => Promise<string>
   resetPassword: (token: string, password: string) => Promise<string>
   changeEmail: (newEmail: string, password: string) => Promise<string>
+  changePassword: (currentPassword: string, newPassword: string) => Promise<string>
   verifyEmailChange: (token: string) => Promise<void>
   clearError: () => void
   clearPendingVerification: () => void
+  /** Оновлює користувача (наприклад, accessibleProviders) без показу завантаження. */
+  refreshUser: () => Promise<void>
 }
 
 export interface InterviewState {
-  customVacancies: Vacancy[]
   currentSession: InterviewSession | null
   report: InterviewReport | null
   isGenerating: boolean
 
-  addCustomVacancy: (form: VacancyFormData) => Vacancy
   startSession: (vacancy: Vacancy, config: InterviewConfig) => void
   setSession: (session: InterviewSession) => void
   setGenerating: (value: boolean) => void
@@ -201,8 +237,137 @@ export interface InterviewState {
   reset: () => void
 }
 
+export interface ProviderFormData {
+  name: string
+  slug: string
+}
+
+/** Користувач у списку super_admin (GET /api/users). */
+export interface AdminUser {
+  id: string
+  email: string
+  role: UserRole
+  providerId: string | null
+  /** Усі провайдери provider_admin. */
+  providerIds: string[]
+  /** Провайдери provider_admin лише для перегляду. */
+  viewProviderIds: string[]
+  isGuest: boolean
+  emailVerified: boolean
+  createdAt: string
+}
+
+export interface UserPatch {
+  role?: UserRole
+  providerId?: string | null
+  providerIds?: string[]
+  viewProviderIds?: string[]
+}
+
+export interface AccessEntry {
+  userId: string
+  email: string
+  createdAt: string
+}
+
 export interface ThemeState {
   theme: Theme
   toggleTheme: () => void
   setTheme: (theme: Theme) => void
+}
+
+/** Максимуми повзунків (кількість питань у БД); тоді мінімум 0. Без limits діють діапазони адмін-форми. */
+export interface InterviewConfigLimits {
+  questions: number
+  coding: number
+}
+
+/** Формат JSON-файлу з питаннями вакансії (імпорт/експорт). */
+export interface VacancyQuestionsJson {
+  quizQuestions?: QuizQuestion[] | null
+  botQuestions?: BotQuestion[] | null
+  codingTasks?: CodingTask[] | null
+}
+
+export interface Topic {
+  id: string
+  title: string
+  description: string
+  content: string
+  quizQuestions: QuizQuestion[] | null
+  createdAt?: string
+}
+
+export interface TopicUpdateData {
+  title: string
+  description: string
+  content: string
+  quizQuestions: QuizDraft[] | null
+}
+
+export interface TopicFormData {
+  title: string
+  description: string
+  /** Порожній — текст згенерує AI за назвою й описом. */
+  content: string
+  /** Власні/згенеровані питання; якщо не передано, сервер згенерує сам (за потреби). */
+  quizQuestions?: QuizDraft[] | null
+  questionCount?: number
+  generateQuestions?: boolean
+}
+
+export interface TestResultDetail {
+  question: string
+  options: string[]
+  correctIndex: number
+  /** null — без відповіді. */
+  selectedIndex: number | null
+  explanation: string | null
+}
+
+/** Результат користувача в адмінському огляді (без відповідей по питаннях). */
+export interface TeamResult {
+  id: string
+  userId: string
+  email: string | null
+  topicId: string | null
+  topicTitle: string
+  providerId: string | null
+  providerName: string | null
+  score: number
+  correctCount: number
+  total: number
+  createdAt: string
+}
+
+/** Результат співбесіди в адмінському огляді. */
+export interface InterviewResultSummary {
+  id: string
+  userId: string
+  email: string | null
+  vacancyId: string | null
+  vacancyTitle: string
+  level: SeniorityLevel | null
+  providerId: string | null
+  providerName: string | null
+  score: number
+  createdAt: string
+}
+
+/** Власний результат співбесіди користувача: підсумок разом зі звітом. */
+export interface OwnInterviewResult extends InterviewResultSummary {
+  report: InterviewReport
+}
+
+export interface TestResult {
+  id: string
+  topicId: string | null
+  providerId: string | null
+  topicTitle: string
+  providerName: string | null
+  score: number
+  correctCount: number
+  total: number
+  details: TestResultDetail[]
+  createdAt: string
 }

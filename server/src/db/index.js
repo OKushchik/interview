@@ -10,7 +10,7 @@ export const sequelize = new Sequelize(env.databaseUrl, {
   },
 })
 
-const { User, Vacancy, Provider, UserProviderAccess } = initModels(sequelize)
+const { User, Vacancy, Provider, UserProviderAccess, Topic, TestResult, InterviewResult } = initModels(sequelize)
 
 function toUserRow(row) {
   const user = row.get({ plain: true })
@@ -53,6 +53,9 @@ export const db = {
       }
       return toUserRow(rows[0])
     },
+    async destroy({ where }) {
+      return User.destroy({ where })
+    },
   },
   Provider: {
     async findOne({ where }) {
@@ -93,6 +96,48 @@ export const db = {
     },
     async destroy({ where }) {
       return UserProviderAccess.destroy({ where })
+    },
+  },
+  Topic: {
+    async findAll({ where, order } = {}) {
+      const rows = await Topic.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async findOne({ where }) {
+      const row = await Topic.findOne({ where })
+      return row ? row.get({ plain: true }) : null
+    },
+    async create(values) {
+      const row = await Topic.create(values)
+      return row.get({ plain: true })
+    },
+    async update(values, { where }) {
+      const [count, rows] = await Topic.update(values, { where, returning: true })
+      if (count === 0 || !rows[0]) throw new Error('Topic not found')
+      return rows[0].get({ plain: true })
+    },
+    async destroy({ where }) {
+      return Topic.destroy({ where })
+    },
+  },
+  TestResult: {
+    async findAll({ where, order } = {}) {
+      const rows = await TestResult.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async create(values) {
+      const row = await TestResult.create(values)
+      return row.get({ plain: true })
+    },
+  },
+  InterviewResult: {
+    async findAll({ where, order } = {}) {
+      const rows = await InterviewResult.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async create(values) {
+      const row = await InterviewResult.create(values)
+      return row.get({ plain: true })
     },
   },
   Vacancy: {

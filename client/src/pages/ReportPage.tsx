@@ -1,18 +1,20 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useInterviewStore } from '@/store/interviewStore'
+import { useVacanciesPath } from '@/hooks/useVacanciesPath'
 import { Header } from '@/components/layout/Header'
 import { SummaryReport } from '@/components/report/SummaryReport'
 
 export function ReportPage() {
   const navigate = useNavigate()
   const { report, currentSession } = useInterviewStore()
+  const backPath = useVacanciesPath()
 
   useEffect(() => {
     if (!report || !currentSession) {
-      navigate('/vacancies')
+      navigate(backPath)
     }
-  }, [report, currentSession, navigate])
+  }, [report, currentSession, navigate, backPath])
 
   if (!report || !currentSession) return null
 

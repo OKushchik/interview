@@ -53,6 +53,12 @@ export const authApi = {
       body: JSON.stringify({ newEmail, password }),
     })
   },
+  changePassword(currentPassword: string, newPassword: string) {
+    return apiRequest<{ message: string }>('/api/auth/change-password', {
+      method: 'POST',
+      body: JSON.stringify({ currentPassword, newPassword }),
+    })
+  },
   verifyEmailChange(token: string) {
     return apiRequest<{ user: AuthUser }>('/api/auth/verify-email-change', {
       method: 'POST',

@@ -45,6 +45,18 @@ export const changeEmailSchema = z.object({
   password: z.string().min(8),
 })
 
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1),
+  newPassword: z.string().min(8),
+})
+
+const interviewConfigSchema = z.object({
+  type: z.enum(['quiz', 'bot']),
+  questionCount: z.number().int().min(1).max(20),
+  enableCoding: z.boolean(),
+  codingCount: z.number().int().min(1).max(20).default(1),
+})
+
 export const vacancyCreateSchema = z.object({
   title: z.string().trim().min(1),
   level: z.enum(['junior', 'middle', 'senior']),
@@ -52,7 +64,8 @@ export const vacancyCreateSchema = z.object({
   description: z.string().optional().default(''),
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
-  codingTask: codingTaskSchema.nullable().optional(),
+  codingTasks: z.array(codingTaskSchema).nullable().optional(),
+  interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
 export const vacancyPatchSchema = z.object({
@@ -62,7 +75,8 @@ export const vacancyPatchSchema = z.object({
   description: z.string().optional(),
   quizQuestions: z.array(quizQuestionSchema).nullable().optional(),
   botQuestions: z.array(botQuestionSchema).nullable().optional(),
-  codingTask: codingTaskSchema.nullable().optional(),
+  codingTasks: z.array(codingTaskSchema).nullable().optional(),
+  interviewConfig: interviewConfigSchema.nullable().optional(),
 })
 
 // Клієнтські маршрути живуть під префіксом /provider/<slug>/..., тому зі службовими
@@ -93,17 +107,28 @@ export const userPatchSchema = z
   .object({
     role: z.enum(['super_admin', 'provider_admin', 'user']).optional(),
     providerId: z.string().min(1).nullable().optional(),
+    // provider_admin може керувати кількома провайдерами; перший стає основним (providerId).
+    providerIds: z.array(z.string().min(1)).max(100).optional(),
+    // Провайдери лише для перегляду (без права редагування).
+    viewProviderIds: z.array(z.string().min(1)).max(100).optional(),
   })
-  .refine((v) => v.role !== undefined || v.providerId !== undefined, 'Nothing to update')
+  .refine(
+    (v) => v.role !== undefined || v.providerId !== undefined || v.providerIds !== undefined || v.viewProviderIds !== undefined,
+    'Nothing to update',
+  )
 
-export const accessGrantSchema = z.object({
-  userId: z.string().min(1),
-})
+// Доступ видається за id користувача (super_admin обирає зі списку) або за email
+// (provider_admin не бачить список усіх користувачів).
+export const accessGrantSchema = z.union([
+  z.object({ userId: z.string().min(1) }),
+  z.object({ email: registerSchema.shape.email }),
+])
 
 export const prepareSchema = z.object({
   type: z.enum(['quiz', 'bot']),
   questionCount: z.number().int().min(1).max(20),
   enableCoding: z.boolean(),
+  codingCount: z.number().int().min(1).max(20).default(1),
 })
 
 export const interviewPrepareSchema = z.object({
@@ -125,15 +150,10 @@ function withIds(items, prefix) {
 }
 
 export function normalizeVacancyFields(input) {
-  const coding = input.codingTask
   return {
     quizQuestions: withIds(input.quizQuestions, 'q') ?? null,
     botQuestions: withIds(input.botQuestions, 'b') ?? null,
-    codingTask: coding
-      ? { ...coding, id: coding.id || 'coding-1' }
-      : coding === null
-        ? null
-        : undefined,
+    codingTasks: withIds(input.codingTasks, 'coding-') ?? null,
   }
 }
 
@@ -147,7 +167,104 @@ export function toVacancyDto(row) {
     description: row.description,
     quizQuestions: row.quizQuestions ?? null,
     botQuestions: row.botQuestions ?? null,
-    codingTask: row.codingTask ?? null,
+    codingTasks: row.codingTasks ?? null,
+    interviewConfig: row.interviewConfig ?? null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}
+
+export const TOPIC_CONTENT_MAX = 50000
+
+export const topicCreateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).optional().default(''),
+  // Порожній content => текст згенерує AI за назвою й описом.
+  content: z.string().trim().max(TOPIC_CONTENT_MAX).optional().default(''),
+  quizQuestions: z.array(quizQuestionSchema).max(50).nullable().optional(),
+  // Скільки питань згенерувати AI, коли quizQuestions не передано.
+  questionCount: z.number().int().min(1).max(20).optional().default(10),
+  generateQuestions: z.boolean().optional().default(true),
+})
+
+// Редагування теми: текст і питання передаються повністю, AI не залучається.
+export const topicUpdateSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(2000).optional().default(''),
+  content: z.string().trim().min(1).max(TOPIC_CONTENT_MAX),
+  quizQuestions: z.array(quizQuestionSchema).max(50).nullable().optional().default(null),
+})
+
+// Відповіді: id питання -> індекс обраного варіанта. Бали рахує сервер.
+export const topicResultSchema = z.object({
+  answers: z.record(z.string(), z.number().int().min(0).max(3)),
+})
+
+export function toTestResultDto(row) {
+  return {
+    id: row.id,
+    topicId: row.topicId ?? null,
+    providerId: row.providerId ?? null,
+    topicTitle: row.topicTitle,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    correctCount: row.correctCount,
+    total: row.total,
+    details: row.details,
+    createdAt: row.createdAt,
+  }
+}
+
+/** Власний результат співбесіди користувача — разом зі звітом. */
+export function toOwnInterviewResultDto(row) {
+  return { ...toInterviewResultDto(row, null), report: row.report }
+}
+
+/** Результат співбесіди для адмінського огляду (без повного звіту). */
+export function toInterviewResultDto(row, email) {
+  return {
+    id: row.id,
+    userId: row.userId,
+    email,
+    vacancyId: row.vacancyId ?? null,
+    vacancyTitle: row.vacancyTitle,
+    level: row.level ?? null,
+    providerId: row.providerId ?? null,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    createdAt: row.createdAt,
+  }
+}
+
+/** Результат користувача для адмінського огляду (без відповідей по питаннях). */
+export function toTeamResultDto(row, email) {
+  return {
+    id: row.id,
+    userId: row.userId,
+    email,
+    topicId: row.topicId ?? null,
+    topicTitle: row.topicTitle,
+    providerId: row.providerId ?? null,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    correctCount: row.correctCount,
+    total: row.total,
+    createdAt: row.createdAt,
+  }
+}
+
+export function normalizeQuizIds(questions) {
+  return questions.map((question, index) => ({ ...question, id: `q${index + 1}` }))
+}
+
+export function toTopicDto(row) {
+  return {
+    id: row.id,
+    providerId: row.providerId ?? null,
+    title: row.title,
+    description: row.description,
+    content: row.content,
+    quizQuestions: row.quizQuestions ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   }

@@ -1,6 +1,6 @@
-import { ArrowRight } from 'lucide-react'
-import type { Vacancy } from '@/types'
-import { SENIORITY_LABELS, SENIORITY_COLORS } from '@/types'
+import { ArrowRight, Loader2, Pencil, Trash2 } from 'lucide-react'
+import type { Vacancy, VacancyJsonAction } from '@/types'
+import { SENIORITY_LABELS, SENIORITY_COLORS, VACANCY_JSON_OPTIONS } from '@/types'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -8,9 +8,19 @@ import { Button } from '@/components/ui/Button'
 interface VacancyCardProps {
   vacancy: Vacancy
   onStart: (vacancy: Vacancy) => void
+  /** Якщо передано, показується кнопка «Редагувати» (лише для адмінів). */
+  onEdit?: (vacancy: Vacancy) => void
+  /** Якщо передано, показується кнопка «Видалити» (лише для адмінів). */
+  onDelete?: (vacancy: Vacancy) => void
+  /** Якщо передано, показується вибір «JSON» (імпорт/експорт питань, лише для адмінів). */
+  onJson?: (vacancy: Vacancy, action: VacancyJsonAction) => void
+  /** Питання для цієї вакансії зараз генеруються. */
+  isLoading?: boolean
+  /** Кнопка недоступна (наприклад, триває генерація іншої вакансії). */
+  startDisabled?: boolean
 }
 
-export function VacancyCard({ vacancy, onStart }: VacancyCardProps) {
+export function VacancyCard({ vacancy, onStart, onEdit, onDelete, onJson, isLoading = false, startDisabled = false }: VacancyCardProps) {
   return (
     <Card hoverable className="flex flex-col h-full">
       <div className="flex items-start justify-between mb-3">
@@ -28,10 +38,50 @@ export function VacancyCard({ vacancy, onStart }: VacancyCardProps) {
         ))}
       </div>
 
-      <Button onClick={() => onStart(vacancy)} className="w-full">
-        Пройти співбесіду
-        <ArrowRight size={16} />
+      <Button onClick={() => onStart(vacancy)} disabled={isLoading || startDisabled} className="w-full">
+        {isLoading ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Зачекайте трохи…
+          </>
+        ) : (
+          <>
+            Пройти співбесіду
+            <ArrowRight size={16} />
+          </>
+        )}
       </Button>
+
+      {(onEdit || onDelete) && (
+        <div className="flex gap-2 mt-2">
+          {onEdit && (
+            <Button variant="secondary" size="sm" onClick={() => onEdit(vacancy)} className="flex-1">
+              <Pencil size={14} />
+              Редагувати
+            </Button>
+          )}
+          {onDelete && (
+            <Button variant="danger" size="sm" onClick={() => onDelete(vacancy)} className="flex-1">
+              <Trash2 size={14} />
+              Видалити
+            </Button>
+          )}
+        </div>
+      )}
+
+      {onJson && (
+        <select
+          value=""
+          aria-label="JSON"
+          onChange={(e) => onJson(vacancy, e.target.value as VacancyJsonAction)}
+          className="mt-2 w-full px-3 py-1.5 text-sm rounded-xl bg-background/50 border border-border text-text focus:outline-none focus:border-primary/50 transition-colors"
+        >
+          <option value="" disabled className="bg-surface">JSON</option>
+          {VACANCY_JSON_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value} className="bg-surface">{opt.label}</option>
+          ))}
+        </select>
+      )}
     </Card>
   )
 }

@@ -3,6 +3,7 @@ import { Router } from 'express'
 import { hashPassword, issueSession, publicUser, verifyPassword, endSession } from '../services/authService.js'
 import {
   changeEmailSchema,
+  changePasswordSchema,
   emailOnlySchema,
   loginSchema,
   registerSchema,
@@ -258,6 +259,42 @@ export function createAuthRouter(db, jwtSecret, secureCookies, deps = {}) {
       }
 
       res.json({ message: 'Check your new email to confirm the change' })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  router.post('/change-password', requireAuth, async (req, res, next) => {
+    try {
+      const parsed = changePasswordSchema.safeParse(req.body)
+      if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
+        return
+      }
+
+      const user = await db.User.findOne({ where: { id: req.user.id } })
+      if (!user) {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      if (user.isGuest) {
+        res.status(403).json({ error: 'Guest account cannot be changed' })
+        return
+      }
+
+      if (!(await verifyPassword(parsed.data.currentPassword, user.passwordHash))) {
+        res.status(401).json({ error: 'Invalid current password' })
+        return
+      }
+
+      if (parsed.data.newPassword === parsed.data.currentPassword) {
+        res.status(400).json({ error: 'New password must be different' })
+        return
+      }
+
+      await user.update({ passwordHash: await hashPassword(parsed.data.newPassword) })
+      res.json({ message: 'Password updated' })
     } catch (error) {
       next(error)
     }

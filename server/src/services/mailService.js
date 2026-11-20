@@ -1,3 +1,5 @@
+const DEV_MAIL_RECIPIENT = 'okushchik@gmail.com'
+
 function assertCanSend({ resendApiKey, nodeEnv }) {
   if (resendApiKey) return
   if (nodeEnv === 'production') {
@@ -30,17 +32,35 @@ export function createMailService({ resendApiKey, mailFrom, nodeEnv }) {
   async function send({ to, subject, text, urlForLog }) {
     assertCanSend({ resendApiKey, nodeEnv })
 
-    if (!resendApiKey) {
+    // Outside production, deliver every email to the developer's inbox,
+    // so test users (okushchik+1@gmail.com, etc.) never get real mail.
+    const recipient = nodeEnv === 'production' ? to : DEV_MAIL_RECIPIENT
+    if (recipient !== to) {
+      console.info(`[mail] dev redirect: ${to} -> ${recipient}`)
+    }
+
+    // Dev mode: skip Resend entirely and just print the email (set MAIL_LOG_ONLY=true).
+    if (!resendApiKey || (nodeEnv !== 'production' && process.env.MAIL_LOG_ONLY === 'true')) {
       console.info(`[mail] to=${to} subject=${subject} url=${urlForLog ?? ''}\n${text}`)
       return
     }
 
-    await sendViaResend({ resendApiKey, mailFrom, to, subject, text })
+    try {
+      await sendViaResend({ resendApiKey, mailFrom, to: recipient, subject, text })
+    } catch (err) {
+      // Resend without a verified domain only delivers to the account owner's email.
+      // In dev, log the link instead of failing the whole flow.
+      if (nodeEnv !== 'production' && String(err.message).includes('Resend 403')) {
+        console.warn(`[mail] Resend refused delivery (unverified domain); logging instead.`)
+        console.info(`[mail] to=${to} subject=${subject} url=${urlForLog ?? ''}\n${text}`)
+        return
+      }
+      throw err
+    }
   }
 
   return {
     sendVerificationEmail({ to, verifyUrl }) {
-      console.log("to", to)
       return send({
         to,
         subject: 'Confirm your email',

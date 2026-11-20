@@ -1,99 +1,62 @@
-import { useState } from 'react'
-import { Target, Bot, Loader2 } from 'lucide-react'
-import type { InterviewConfig, InterviewType } from '@/types'
+import { useEffect, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import type { InterviewConfig, Vacancy } from '@/types'
+import { DEFAULT_INTERVIEW_CONFIG, GENERATED_MAX } from '@/types'
 import { Modal } from '@/components/ui/Modal'
-import { Slider } from '@/components/ui/Slider'
-import { Toggle } from '@/components/ui/Toggle'
 import { Button } from '@/components/ui/Button'
+import { isManualVacancy } from '@/utils/manualVacancy'
+import { InterviewConfigFields } from './InterviewConfigFields'
+
+const clamp = (value: number, max: number, min = 0) => Math.min(Math.max(value, min), max)
 
 interface InterviewConfigModalProps {
   isOpen: boolean
   onClose: () => void
   onStart: (config: InterviewConfig) => void
   isGenerating: boolean
-  vacancyTitle: string
+  vacancy: Vacancy | null
   error?: string | null
 }
-
-const TYPES: { value: InterviewType; label: string; description: string; icon: typeof Target }[] = [
-  {
-    value: 'quiz',
-    label: 'Quiz (Тести)',
-    description: 'Питання з 4 варіантами відповідей',
-    icon: Target,
-  },
-  {
-    value: 'bot',
-    label: 'Online Bot',
-    description: 'Вільна форма з текстом або голосом',
-    icon: Bot,
-  },
-]
 
 export function InterviewConfigModal({
   isOpen,
   onClose,
   onStart,
   isGenerating,
-  vacancyTitle,
+  vacancy,
   error,
 }: InterviewConfigModalProps) {
-  const [type, setType] = useState<InterviewType>('quiz')
-  const [questionCount, setQuestionCount] = useState(10)
-  const [enableCoding, setEnableCoding] = useState(false)
+  const [config, setConfig] = useState<InterviewConfig>(DEFAULT_INTERVIEW_CONFIG)
 
-  const handleStart = () => {
-    onStart({ type, questionCount, enableCoding })
+  // Максимум — кількість питань цього типу, що збережені в БД для вакансії.
+  const stored = config.type === 'quiz' ? vacancy?.quizQuestions : vacancy?.botQuestions
+  const limits = {
+    questions: stored?.length || GENERATED_MAX,
+    coding: vacancy?.codingTasks?.length || GENERATED_MAX,
   }
+
+  // При кожному відкритті форма починається з конфігурації вакансії (якщо є) або значень за замовчуванням.
+  useEffect(() => {
+    if (!isOpen) return
+    setConfig({ ...DEFAULT_INTERVIEW_CONFIG, ...vacancy?.interviewConfig })
+  }, [isOpen, vacancy])
+
+  const questionCount = clamp(config.questionCount, limits.questions, 1)
+  const codingCount = clamp(config.codingCount ?? 1, limits.coding, 1)
+  // Вакансія, створена вручну без завдань з кодингу, проходиться без секції кодингу (AI її не генерує).
+  const noCoding = vacancy !== null && isManualVacancy(vacancy) && !vacancy.codingTasks?.length
+  const enableCoding = config.enableCoding && !noCoding
+  const total = questionCount + (enableCoding ? codingCount : 0)
+  const effective: InterviewConfig = { ...config, questionCount, codingCount, enableCoding }
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Конфігурація співбесіди" size="xl">
       <p className="text-sm text-muted mb-6">
-        Вакансія: <span className="text-text font-medium">{vacancyTitle}</span>
+        Вакансія: <span className="text-text font-medium">{vacancy?.title ?? ''}</span>
       </p>
 
       <div className="space-y-6">
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-muted">Тип співбесіди</label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {TYPES.map((t) => {
-              const Icon = t.icon
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setType(t.value)}
-                  className={`p-4 rounded-xl border text-left transition-all ${
-                    type === t.value
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-border-hover'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <Icon size={20} className={type === t.value ? 'text-primary' : 'text-muted'} />
-                    <span className="font-medium text-text">{t.label}</span>
-                  </div>
-                  <p className="text-xs text-muted">{t.description}</p>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-
-        <Slider
-          label="Кількість питань"
-          value={questionCount}
-          min={5}
-          max={20}
-          onChange={(e) => setQuestionCount(Number(e.target.value))}
-        />
-
-        <Toggle
-          label="Онлайн кодинг"
-          description="Додати секцію з написанням коду"
-          checked={enableCoding}
-          onChange={setEnableCoding}
-        />
+        <InterviewConfigFields value={effective} onChange={setConfig} limits={limits} hideCoding={noCoding} />
 
         {error && (
           <p className="text-sm text-red-400">{error}</p>
@@ -103,7 +66,7 @@ export function InterviewConfigModal({
           <Button type="button" variant="ghost" onClick={onClose} disabled={isGenerating}>
             Назад
           </Button>
-          <Button onClick={handleStart} disabled={isGenerating}>
+          <Button onClick={() => onStart(effective)} disabled={isGenerating || total === 0}>
             {isGenerating ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
