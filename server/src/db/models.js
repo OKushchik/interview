@@ -208,7 +208,7 @@ export function initModels(sequelize) {
         type: DataTypes.STRING,
         primaryKey: true,
       },
-      // 'manage' — редагування (provider_admin), 'view' — лише перегляд.
+      // 'manage' - editing (provider_admin), 'view' - view only.
       accessLevel: {
         type: DataTypes.STRING,
         allowNull: false,

@@ -8,15 +8,15 @@ import { Button } from '@/components/ui/Button'
 interface VacancyCardProps {
   vacancy: Vacancy
   onStart: (vacancy: Vacancy) => void
-  /** Якщо передано, показується кнопка «Редагувати» (лише для адмінів). */
+  /** If passed, an 'Edit' button is shown (admins only). */
   onEdit?: (vacancy: Vacancy) => void
-  /** Якщо передано, показується кнопка «Видалити» (лише для адмінів). */
+  /** If passed, a 'Delete' button is shown (admins only). */
   onDelete?: (vacancy: Vacancy) => void
-  /** Якщо передано, показується вибір «JSON» (імпорт/експорт питань, лише для адмінів). */
+  /** If passed, a 'JSON' choice is shown (question import/export, admins only). */
   onJson?: (vacancy: Vacancy, action: VacancyJsonAction) => void
-  /** Питання для цієї вакансії зараз генеруються. */
+  /** Questions for this vacancy are being generated right now. */
   isLoading?: boolean
-  /** Кнопка недоступна (наприклад, триває генерація іншої вакансії). */
+  /** The button is disabled (e.g. another vacancy is being generated). */
   startDisabled?: boolean
 }
 

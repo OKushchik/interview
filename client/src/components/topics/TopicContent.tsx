@@ -7,7 +7,7 @@ interface TopicContentProps {
 const FENCE = /```[^\n`]*\n([\s\S]*?)```/g
 const INLINE = /`([^`\n]+)`/g
 
-/** Текст з `inline` кодом у <code>. */
+/** Text with `inline` code in <code>. */
 function renderInline(text: string) {
   const parts: React.ReactNode[] = []
   let last = 0
@@ -26,8 +26,8 @@ function renderInline(text: string) {
 }
 
 /**
- * Текст теми: блоки коду між ``` ... ``` відображаються як <pre><code>,
- * фрагменти в `зворотних лапках` — як inline <code>. Решта — звичайний текст.
+ * Topic text: code blocks between ``` ... ``` are rendered as <pre><code>,
+ * fragments in `backticks` as inline <code>. The rest is plain text.
  */
 export function TopicContent({ content }: TopicContentProps) {
   const nodes: React.ReactNode[] = []

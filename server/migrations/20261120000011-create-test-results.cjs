@@ -1,6 +1,6 @@
 'use strict'
 
-/** Результати проходження тестів по темах (вкладка «Аналіз» в акаунті). */
+/** Results of passing tests per topic ('Analysis' tab in the account). */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -12,7 +12,7 @@ module.exports = {
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
-      // Без FK: результат має пережити видалення теми (є знімок назви й питань).
+      // No FK: the result must outlive the topic deletion (a snapshot of the title and questions is kept).
       topic_id: { type: Sequelize.STRING, allowNull: true },
       provider_id: { type: Sequelize.STRING, allowNull: true },
       topic_title: { type: Sequelize.STRING, allowNull: false },

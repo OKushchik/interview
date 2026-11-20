@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 
-/** Вкладка «Провайдери»: створення й список. */
+/** 'Providers' tab: creation and list. */
 export function ProvidersTab() {
   const refreshUser = useAuthStore((s) => s.refreshUser)
   const [providers, setProviders] = useState<Provider[]>([])

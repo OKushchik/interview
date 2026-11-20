@@ -9,7 +9,7 @@ export async function listVacancies(db, providerId) {
   return rows.map(toVacancyDto)
 }
 
-/** Вакансія за id; якщо передано providerId, шукає лише в цій компанії. */
+/** Vacancy by id; if providerId is passed, searches only within that provider. */
 export async function getVacancy(db, id, providerId) {
   const where = providerId ? { id, providerId } : { id }
   const row = await db.Vacancy.findOne({ where })
@@ -67,8 +67,8 @@ export async function patchVacancy(db, id, providerId, input, generator) {
   if (input.codingTasks !== undefined) values.codingTasks = normalized.codingTasks ?? null
   if (input.interviewConfig !== undefined) values.interviewConfig = input.interviewConfig
 
-  // Генеруємо відсутні питання для чинної конфігурації; змінені title/level/skills
-  // роблять старі питання неактуальними, тому тоді генеруємо заново.
+  // Generate missing questions for the current config; changed title/level/skills
+  // make old questions stale, so in that case regenerate from scratch.
   const config = input.interviewConfig !== undefined ? input.interviewConfig : existing.interviewConfig
   const contentChanged = ['title', 'level'].some((key) => input[key] !== undefined && input[key] !== existing[key])
     || (input.skills !== undefined && JSON.stringify(input.skills) !== JSON.stringify(existing.skills))

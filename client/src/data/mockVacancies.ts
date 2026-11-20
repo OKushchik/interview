@@ -1,8 +1,8 @@
 import type { Vacancy } from '@/types'
 
 /**
- * Мокові вакансії з готовими питаннями: 5 питань Quiz (одна правильна відповідь, correctIndex),
- * 5 питань Online Bot з еталонною відповіддю (answer) та завдання для онлайн-кодингу.
+ * Mock vacancies with ready-made questions: 5 Quiz questions (one correct answer, correctIndex),
+ * 5 Online Bot questions with a reference answer (answer) and an online coding task.
  */
 export const MOCK_VACANCIES: Vacancy[] = [
   {

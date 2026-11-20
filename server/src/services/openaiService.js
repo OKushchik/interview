@@ -256,8 +256,8 @@ function buildCodingSection(parsedCoding) {
 
 const QUESTION_BATCH_SIZE = 10
 
-// LLM часто повертає менше питань, ніж просили (або частину відсіює валідація),
-// тому добираємо брак невеликими батчами, передаючи вже наявні питання, щоб уникнути повторів.
+// An LLM often returns fewer questions than requested (or validation drops some),
+// so the shortfall is topped up in small batches, passing the existing questions to avoid repeats.
 async function collectQuestions(count, fetchBatch, label, labelOf = (item) => item.question) {
   const items = []
   const seen = new Set()

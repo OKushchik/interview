@@ -24,15 +24,15 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 
 /**
- * Список вакансій. З `:slug` (/provider/<slug>/vacancies) вакансії приходять з API,
- * без `:slug` (/vacancies) показуються мок-вакансії для користувача без провайдера.
+ * Vacancy list. With `:slug` (/provider/<slug>/vacancies) vacancies come from the API,
+ * without `:slug` (/vacancies) mock vacancies are shown for a user without a provider.
  */
 export function VacanciesPage() {
   const navigate = useNavigate()
   const { slug } = useParams()
   const user = useAuthStore((s) => s.user)
   const providers = user?.accessibleProviders ?? []
-  // Створювати, редагувати й видаляти вакансії можуть лише адміни; звичайний користувач бачить лише «Пройти співбесіду».
+  // Only admins can create, edit and delete vacancies; a regular user sees only 'Take interview'.
   const canManageVacancies = canManageProvider(user, slug)
   const canCreateVacancy = canManageVacancies
   const { startSession, setSession, setGenerating, isGenerating } = useInterviewStore()
@@ -55,7 +55,7 @@ export function VacanciesPage() {
   const [importingVacancy, setImportingVacancy] = useState<Vacancy | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  // Стабільний об'єкт: модалка скидає форму при зміні initial, тож новий об'єкт на кожен рендер стирав би введене.
+  // Stable object: the modal resets the form when initial changes, so a new object on every render would wipe the input.
   const editingManual = editingVacancy !== null && isManualVacancy(editingVacancy)
   const editInitial = useMemo(
     () => (editingVacancy ? { title: editingVacancy.title, level: editingVacancy.level, skills: editingVacancy.skills, interviewConfig: editingVacancy.interviewConfig ?? null } : null),
@@ -99,7 +99,7 @@ export function VacanciesPage() {
   const handleStartInterview = (vacancy: Vacancy) => {
     setSelectedVacancy(vacancy)
     setGenerateError(null)
-    // Конфігурацію завжди обирає користувач: вікно відкривається щоразу.
+    // The config is always chosen by the user: the window opens every time.
     setShowConfigModal(true)
   }
 
@@ -216,7 +216,7 @@ export function VacanciesPage() {
         ? error.message
         : 'Не вдалося згенерувати питання'
       setGenerateError(message)
-      // Без модалки (збережена конфігурація) помилку інакше ніде показати.
+      // Without a modal (saved config) there is nowhere else to show the error.
       if (!showConfigModal) setShowConfigModal(true)
     } finally {
       setGenerating(false)
@@ -243,7 +243,7 @@ export function VacanciesPage() {
             key={vacancy.id}
             vacancy={vacancy}
             onStart={handleStartInterview}
-            // Для збереженої конфігурації модалки немає, тож стан очікування показується на картці.
+            // There is no modal for a saved config, so the pending state is shown on the card.
             isLoading={isGenerating && !showConfigModal && selectedVacancy?.id === vacancy.id}
             startDisabled={isGenerating}
             onEdit={canManageVacancies ? (v) => { setEditError(null); setEditingVacancy(v) } : undefined}

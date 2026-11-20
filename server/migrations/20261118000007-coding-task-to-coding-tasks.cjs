@@ -1,8 +1,8 @@
 'use strict'
 
 /**
- * Одне завдання з кодингу (coding_task) стає списком завдань (coding_tasks).
- * Наявний об'єкт обгортається в масив з одного елемента.
+ * A single coding task (coding_task) becomes a list of tasks (coding_tasks).
+ * The existing object is wrapped into a one-element array.
  */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

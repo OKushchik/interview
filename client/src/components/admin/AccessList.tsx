@@ -8,7 +8,7 @@ interface AccessListProps {
   busyUserId?: string | null
 }
 
-/** Список користувачів з доступом до провайдера, з можливістю відкликати доступ. */
+/** List of users with access to a provider, with the ability to revoke access. */
 export function AccessList({ entries, onRevoke, busyUserId }: AccessListProps) {
   if (entries.length === 0) {
     return <p className="text-sm text-muted">Жодного користувача з доступом поки немає.</p>

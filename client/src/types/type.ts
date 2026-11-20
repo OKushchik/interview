@@ -26,7 +26,7 @@ export type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'anonymous'
 
 export type Theme = 'dark' | 'light'
 
-/** Кому видати доступ: за id (зі списку) або за email. */
+/** Who to grant access to: by id (from a list) or by email. */
 export type AccessGrant = { userId: string } | { email: string }
 
 export type LoadStatus = 'loading' | 'ready' | 'forbidden' | 'error'

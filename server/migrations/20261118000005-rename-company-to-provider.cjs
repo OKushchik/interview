@@ -1,9 +1,9 @@
 'use strict'
 
 /**
- * Перейменування company → provider:
- * таблиці, колонки, індекси та значення enum ролі (company_admin → provider_admin).
- * Дані зберігаються, міграція оборотна.
+ * Rename company -> provider:
+ * tables, columns, indexes and role enum values (company_admin -> provider_admin).
+ * Data is preserved, the migration is reversible.
  */
 
 const INDEXES = [

@@ -21,7 +21,7 @@ const MEDALS = ['🥇', '🥈', '🥉']
 interface Column<T> {
   header: string
   align?: 'right'
-  /** Значення для сортування; без нього стовпець не сортується. */
+  /** Value for sorting; without it the column is not sortable. */
   sortValue?: (row: T) => string | number
   render: (row: T) => React.ReactNode
 }
@@ -31,8 +31,8 @@ type SortDir = 'asc' | 'desc'
 const DEFAULT_SORT_HEADER = 'Результат'
 
 /**
- * Таблиця результатів з сортуванням по кліку на заголовок. Початково — за результатом від найкращих
- * (порядок від сервера: при рівних балах далі кількість правильних і дата). Медалі показуються лише в цьому порядку.
+ * Results table with sorting by header click. Initially by score, best first
+ * (server order: on equal scores, then correct count and date). Medals are shown only in this order.
  */
 function ResultsTable<T extends { id: string }>({ rows, columns }: { rows: T[]; columns: Column<T>[] }) {
   const [sort, setSort] = useState<{ header: string; dir: SortDir }>({ header: DEFAULT_SORT_HEADER, dir: 'desc' })
@@ -43,7 +43,7 @@ function ResultsTable<T extends { id: string }>({ rows, columns }: { rows: T[]; 
     if (!column?.sortValue || isDefault) return rows
     const value = column.sortValue
     const factor = sort.dir === 'asc' ? 1 : -1
-    // Стабільне сортування: рівні значення лишаються у порядку від сервера.
+    // Stable sort: equal values keep the server order.
     return rows
       .map((row, index) => ({ row, index }))
       .sort((x, y) => {
@@ -59,7 +59,7 @@ function ResultsTable<T extends { id: string }>({ rows, columns }: { rows: T[]; 
     setSort((prev) =>
       prev.header === c.header
         ? { header: c.header, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-        // Числа й дати спершу від більшого/новішого, текст — за алфавітом.
+        // Numbers and dates go larger/newer first, text alphabetically.
         : { header: c.header, dir: c.align === 'right' || c.header === 'Дата' ? 'desc' : 'asc' },
     )
 
@@ -151,7 +151,7 @@ const ARTICLE_COLUMNS: Column<TeamResult>[] = [
   { header: 'Дата', sortValue: (r) => new Date(r.createdAt).getTime(), render: dateCell },
 ]
 
-/** Вкладка «Результати» (адміни): результати співбесід і статей користувачів по провайдерах адміна, від найкращих. */
+/** 'Results' tab (admins): interview and article results of users across the admin's providers, best first. */
 export function ResultsPage() {
   const authUser = useAuthStore((s) => s.user)
   const providers = useMemo(

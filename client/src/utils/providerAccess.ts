@@ -1,6 +1,6 @@
 import type { AuthUser } from '@/types'
 
-/** Чи може користувач редагувати вміст провайдера (provider_admin з доступом «лише перегляд» — ні). */
+/** Whether the user can edit provider content (a provider_admin with view-only access cannot). */
 export function canManageProvider(user: AuthUser | null | undefined, slug: string | undefined): boolean {
   if (!user || !slug) return false
   if (user.role === 'super_admin') return true

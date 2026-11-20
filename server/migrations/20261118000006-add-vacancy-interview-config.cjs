@@ -1,6 +1,6 @@
 'use strict'
 
-/** Збережена конфігурація співбесіди вакансії (null — користувач налаштовує сам). */
+/** Saved interview configuration of a vacancy (null - the user configures it themselves). */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {

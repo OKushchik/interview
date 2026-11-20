@@ -13,12 +13,12 @@ import { prepareInterview } from '../services/prepareInterview.js'
 
 /**
  * /api/providers/:slug/vacancies
- * Усі ендпоінти проходять requireProviderAccess; provider_id береться з req.provider,
- * а не з тіла запиту. Запис доступний лише super_admin і provider_admin.
+ * All endpoints go through requireProviderAccess; provider_id is taken from req.provider,
+ * not from the request body. Writing is available only to super_admin and provider_admin.
  */
 export function createVacanciesRouter(db, jwtSecret, generator) {
   const router = Router({ mergeParams: true })
-  // Запис лише з рівнем 'manage' для цього провайдера (provider_admin «лише перегляд» — 403).
+  // Writing only with the 'manage' level for this provider (view-only provider_admin gets 403).
   const requireAdmin = requireProviderManage
 
   router.use(createRequireAuth(jwtSecret))

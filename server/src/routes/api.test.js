@@ -12,7 +12,7 @@ import { createTestResultsRouter } from './testResults.js'
 
 const SECRET = 'test-secret'
 
-/** Мінімальна in-memory БД з тим самим інтерфейсом, що й db/index.js. */
+/** Minimal in-memory DB with the same interface as db/index.js. */
 function createFakeDb() {
   let seq = 0
   const t = new Date('2026-01-01')
@@ -249,7 +249,7 @@ describe('multitenant API', () => {
       const write = await call('userNone', 'POST', '/api/providers/acme/vacancies', { title: 'X', level: 'middle', skills: ['TS'] })
       assert.equal(write.status, 403)
 
-      // власні права на свій провайдер не зачіпаються і не відкликаються через доступи
+      // own rights to their own provider are not affected and not revoked through accesses
       assert.equal((await call('adminA', 'POST', '/api/providers/acme/access', { userId: ids.adminA.id })).status, 400)
       assert.equal((await call('root', 'DELETE', `/api/providers/beta/access/${ids.userNone.id}`)).status, 404)
 
@@ -297,9 +297,9 @@ describe('multitenant API', () => {
       assert.equal(ok.status, 200)
       const saved = db.InterviewResult.rows.at(-1)
       assert.equal(db.InterviewResult.rows.length, before + 1)
-      assert.equal(saved.providerId, ids.a.id) // з БД, хоча в тілі вказано чужого провайдера
+      assert.equal(saved.providerId, ids.a.id) // from the DB, even though the body names a foreign provider
       assert.equal(saved.score, 70)
-      // користувач без доступу до провайдера вакансії: звіт є, результат не зберігається
+      // user without access to the vacancy's provider: the report is returned, the result is not saved
       const foreign = await call('userNone', 'POST', '/api/interview/report', body(ids.vacA))
       assert.equal(foreign.status, 200)
       assert.equal(db.InterviewResult.rows.length, before + 1)
@@ -326,7 +326,7 @@ describe('multitenant API', () => {
 
       const res = await call('adminA', 'GET', '/api/test-results/team/interviews')
       assert.equal(res.status, 200)
-      assert.deepEqual(res.body.results.map((r) => r.score), [80, 70, 55]) // 70 — з тесту збереження звіту
+      assert.deepEqual(res.body.results.map((r) => r.score), [80, 70, 55]) // 70 - from the report-saving test
       assert.ok(!('report' in res.body.results[0]))
       assert.equal((await call('userA', 'GET', '/api/test-results/team/interviews')).status, 403)
       assert.equal((await call('adminA', 'GET', `/api/test-results/team/interviews?providerId=${ids.b.id}`)).status, 403)

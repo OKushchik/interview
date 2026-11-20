@@ -2,14 +2,14 @@ import { isEmptyList } from '../lib/empty.js'
 import { codingTaskCount } from '../lib/codingCount.js'
 
 /**
- * Генерує питання для збереженої конфігурації співбесіди.
- * Кількість питань (questionCount) однакова і для Quiz, і для Online Bot;
- * завдань з онлайн-кодингу створюється codingCount, якщо enableCoding увімкнено.
+ * Generates questions for a saved interview configuration.
+ * The question count (questionCount) is the same for Quiz and Online Bot;
+ * codingCount online coding tasks are created if enableCoding is on.
  *
- * `current` — вже наявні питання; їх зберігаємо, якщо вони відповідають конфігурації
- * і `force` не вимагає перегенерації (змінилися title/level/skills).
- * Збій генерації не блокує збереження вакансії: поле лишається порожнім,
- * а питання створить prepareInterview під час проходження.
+ * `current` - questions that already exist; they are kept if they match the config
+ * and `force` does not require regeneration (title/level/skills changed).
+ * A generation failure does not block saving the vacancy: the field stays empty,
+ * and prepareInterview will create the questions during the interview.
  */
 export async function generateVacancyQuestions(vacancy, config, generator, current = {}, { force = false } = {}) {
   const result = {

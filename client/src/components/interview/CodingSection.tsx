@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/Button'
 
 interface CodingSectionProps {
   tasks: CodingTask[]
-  /** Код по id завдання. */
+  /** Code by task id. */
   codes: Record<string, string>
   onCodeChange: (taskId: string, code: string) => void
   onComplete: () => void

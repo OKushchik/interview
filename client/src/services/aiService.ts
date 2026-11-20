@@ -3,9 +3,9 @@ import { apiRequest } from './api'
 import { pickRandom } from '@/utils/pickRandom'
 
 /**
- * Для вакансії без провайдера бере готові питання з самої вакансії.
- * Якщо питань менше, ніж просить конфігурація, віддає всі наявні (без запиту до сервера).
- * Повертає null лише коли готових питань потрібного типу немає взагалі (тоді генерує сервер).
+ * For a vacancy without a provider, takes ready-made questions from the vacancy itself.
+ * If there are fewer questions than the config asks for, returns all available (without a request to the server).
+ * Returns null only when there are no ready-made questions of the needed type at all (then the server generates).
  */
 function prepareFromStored(vacancy: Vacancy, config: InterviewConfig): PreparedQuestions | null {
   if (vacancy.providerId) return null
@@ -31,12 +31,12 @@ export async function generateQuestions(
   vacancy: Vacancy,
   config: InterviewConfig,
 ): Promise<PreparedQuestions> {
-  // Мокова вакансія з готовими питаннями обходиться без OpenAI.
+  // A mock vacancy with ready-made questions works without OpenAI.
   const local = prepareFromStored(vacancy, config)
   if (local) return local
 
-  // Вакансія провайдера (є providerId) готується на сервері за id;
-  // без провайдера передаємо замоковану вакансію.
+  // A provider vacancy (has providerId) is prepared on the server by id;
+  // without a provider we pass the mocked vacancy.
   const body = vacancy.providerId ? { vacancyId: vacancy.id, config } : { vacancy, config }
   const data = await apiRequest<PrepareResponse>('/api/interview/prepare', {
     method: 'POST',

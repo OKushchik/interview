@@ -7,11 +7,11 @@ interface InterviewConfigFieldsProps {
   value: InterviewConfig
   onChange: (value: InterviewConfig) => void
   limits?: InterviewConfigLimits
-  /** Приховує онлайн кодинг: у вакансії немає завдань з кодингу. */
+  /** Hides online coding: the vacancy has no coding tasks. */
   hideCoding?: boolean
 }
 
-/** Поля конфігурації співбесіди: тип, кількість питань, онлайн кодинг. */
+/** Interview configuration fields: type, question count, online coding. */
 export function InterviewConfigFields({ value, onChange, limits, hideCoding = false }: InterviewConfigFieldsProps) {
   return (
     <div className="space-y-6">

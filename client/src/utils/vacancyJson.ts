@@ -3,7 +3,7 @@ import type { InterviewConfig, Vacancy, VacancyQuestionsJson } from '@/types'
 const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v)
 const isText = (v: unknown): v is string => typeof v === 'string' && v.trim().length > 0
 
-/** Формує вміст файлу експорту з питань вакансії. */
+/** Builds the export file content from the vacancy questions. */
 export function buildQuestionsJson(vacancy: Vacancy): VacancyQuestionsJson {
   return {
     quizQuestions: vacancy.quizQuestions ?? [],
@@ -12,7 +12,7 @@ export function buildQuestionsJson(vacancy: Vacancy): VacancyQuestionsJson {
   }
 }
 
-/** Завантажує JSON як файл у браузері. */
+/** Downloads JSON as a file in the browser. */
 export function downloadJson(data: unknown, filename: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
   const url = URL.createObjectURL(blob)
@@ -23,7 +23,7 @@ export function downloadJson(data: unknown, filename: string) {
   URL.revokeObjectURL(url)
 }
 
-/** Розбирає й перевіряє текст імпортованого файлу; кидає Error з поясненням українською. */
+/** Parses and validates the imported file text; throws an Error with an explanation in Ukrainian. */
 export function parseQuestionsJson(text: string): VacancyQuestionsJson {
   let data: unknown
   try {
@@ -59,8 +59,8 @@ export function parseQuestionsJson(text: string): VacancyQuestionsJson {
 }
 
 /**
- * Підганяє збережену конфігурацію під кількість імпортованих питань,
- * інакше сервер вважав би їх невідповідними і згенерував нові.
+ * Adjusts the saved configuration to the number of imported questions,
+ * otherwise the server would consider them mismatched and generate new ones.
  */
 export function alignConfig(config: InterviewConfig | null | undefined, questions: VacancyQuestionsJson): InterviewConfig | undefined {
   if (!config) return undefined

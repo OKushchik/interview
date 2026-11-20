@@ -1,7 +1,7 @@
 import { HttpError } from '../lib/httpError.js'
 
 export async function listProviderAccess(db, provider) {
-  // Лише доступи «перегляд»: адміни з правом редагування (manage) керуються super_admin і тут не показуються.
+  // Only 'view' accesses: admins with edit rights (manage) are managed by super_admin and are not shown here.
   const rows = (await db.UserProviderAccess.findAll({ where: { providerId: provider.id } })).filter(
     (r) => r.accessLevel !== 'manage',
   )
@@ -17,13 +17,13 @@ export async function listProviderAccess(db, provider) {
     }))
 }
 
-/** Видає доступ (ідемпотентно). Повертає true, якщо запис створено. */
+/** Grants access (idempotent). Returns true if a record was created. */
 export async function grantAccess(db, provider, target) {
   const user = await db.User.findOne({
     where: 'userId' in target ? { id: target.userId } : { email: target.email },
   })
   if (!user) throw new HttpError(404, 'User not found')
-  // Перегляд можна дати звичайному користувачу або адміну іншого провайдера (provider_admin).
+  // View access can be given to a regular user or to an admin of another provider (provider_admin).
   if (!['user', 'provider_admin'].includes(user.role) || user.isGuest) {
     throw new HttpError(400, 'Access can be granted only to regular users or provider admins')
   }
@@ -38,7 +38,7 @@ export async function grantAccess(db, provider, target) {
 
 export async function revokeAccess(db, provider, userId) {
   const existing = await db.UserProviderAccess.findOne({ where: { userId, providerId: provider.id } })
-  // Право редагування (manage) через сторінку доступів не відкликається.
+  // Edit rights (manage) are not revoked through the access page.
   if (!existing || existing.accessLevel === 'manage') return false
   await db.UserProviderAccess.destroy({ where: { userId, providerId: provider.id } })
   return true

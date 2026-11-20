@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/Select'
 
-/** Вкладка «Доступи»: видати користувачу доступ до будь-якого провайдера. */
+/** 'Accesses' tab: grant a user access to any provider. */
 export function AccessTab() {
   const [providers, setProviders] = useState<Provider[]>([])
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -24,7 +24,7 @@ export function AccessTab() {
     Promise.all([providersApi.list(), usersApi.list()])
       .then(([p, u]) => {
         setProviders(p)
-        // Перегляд можна дати і звичайним користувачам, і адмінам інших провайдерів.
+        // View access can be given to both regular users and admins of other providers.
         setUsers(u.filter((x) => (x.role === 'user' || x.role === 'provider_admin') && !x.isGuest))
         setSlug((current) => current || p[0]?.slug || '')
       })
@@ -85,7 +85,7 @@ export function AccessTab() {
 
   const granted = new Set(entries.map((e) => e.userId))
   const providerId = providers.find((p) => p.slug === slug)?.id
-  // Адміна, який уже керує цим провайдером, у списку не показуємо.
+  // An admin who already manages this provider is not shown in the list.
   const candidates = users.filter((u) => !granted.has(u.id) && !(providerId && u.providerIds.includes(providerId)))
   const userOptions = [
     { value: '', label: 'Оберіть користувача' },

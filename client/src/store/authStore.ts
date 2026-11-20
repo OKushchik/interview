@@ -23,7 +23,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       const { user } = await authApi.me()
       set({ user })
     } catch {
-      // залишаємо поточного користувача: сесію перевіряє bootstrap
+      // keep the current user: the session is checked by bootstrap
     }
   },
 

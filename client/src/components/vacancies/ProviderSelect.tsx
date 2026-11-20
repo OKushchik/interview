@@ -6,11 +6,11 @@ import { providerPath } from '@/utils/paths'
 interface ProviderSelectProps {
   providers: Provider[]
   value: string
-  /** Розділ, до якого веде перемикання (за замовчуванням вакансії). */
+  /** Section the switch leads to (vacancies by default). */
   section?: 'vacancies' | 'topics'
 }
 
-/** Вибір провайдера: звичайна навігація react-router без перезавантаження сторінки. */
+/** Provider select: regular react-router navigation without a page reload. */
 export function ProviderSelect({ providers, value, section = 'vacancies' }: ProviderSelectProps) {
   const navigate = useNavigate()
   const known = providers.some((p) => p.slug === value)

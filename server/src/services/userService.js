@@ -12,7 +12,7 @@ export function toUserDto(row, levels) {
     email: row.email,
     role: row.role,
     providerId: row.providerId ?? null,
-    // provider_admin: providerIds — де може редагувати, viewProviderIds — лише перегляд; для інших ролей — [].
+    // provider_admin: providerIds - where they can edit, viewProviderIds - view only; for other roles - [].
     providerIds: row.role === 'provider_admin' ? idsByLevel(row, levels, 'manage') : [],
     viewProviderIds: row.role === 'provider_admin' ? idsByLevel(row, levels, 'view') : [],
     isGuest: Boolean(row.isGuest),
@@ -37,7 +37,7 @@ export async function listUsers(db) {
   })
 }
 
-/** Зміна ролі та/або прив'язки до компанії. Лише для super_admin (перевіряється в роуті). */
+/** Change of role and/or provider binding. super_admin only (checked in the route). */
 export async function updateUser(db, actorId, targetId, input) {
   const target = await db.User.findOne({ where: { id: targetId } })
   if (!target) throw new HttpError(404, 'User not found')
@@ -48,14 +48,14 @@ export async function updateUser(db, actorId, targetId, input) {
     throw new HttpError(400, 'You cannot change your own role')
   }
 
-  // Для provider_admin: providerIds — керування (перший основний), viewProviderIds — лише перегляд.
+  // For provider_admin: providerIds - manage (the first is primary), viewProviderIds - view only.
   let levels = new Map()
   if (role === 'provider_admin') {
     const current = await adminProviderLevels(db, target)
     const manage = input.providerIds ?? (input.providerId !== undefined ? (input.providerId ? [input.providerId] : []) : [...current].filter(([, l]) => l === 'manage').map(([id]) => id))
     const view = input.viewProviderIds ?? [...current].filter(([, l]) => l === 'view').map(([id]) => id)
     for (const id of view) levels.set(id, 'view')
-    for (const id of manage) levels.set(id, 'manage') // manage перекриває view
+    for (const id of manage) levels.set(id, 'manage') // manage overrides view
     if (manage.length === 0) throw new HttpError(400, 'provider_admin requires at least one provider to manage')
     const found = await db.Provider.findAll({ where: { id: [...levels.keys()] } })
     if (found.length !== levels.size) throw new HttpError(404, 'Provider not found')
@@ -66,8 +66,8 @@ export async function updateUser(db, actorId, targetId, input) {
   const wasProviderAdmin = target.role === 'provider_admin'
   const updated = await db.User.update({ role, providerId }, { where: { id: target.id } })
 
-  // Доступи синхронізуємо, лише коли користувач є/стає/перестає бути provider_admin:
-  // звичайні доступи ролі user (user_provider_access) не чіпаємо.
+  // Sync accesses only when the user is/becomes/stops being a provider_admin:
+  // regular accesses of the user role (user_provider_access) are left untouched.
   if (role === 'provider_admin' || wasProviderAdmin) {
     await db.UserProviderAccess.destroy({ where: { userId: target.id } })
     for (const [id, accessLevel] of levels) await db.UserProviderAccess.create({ userId: target.id, providerId: id, accessLevel })
@@ -75,7 +75,7 @@ export async function updateUser(db, actorId, targetId, input) {
   return toUserDto(updated, levels)
 }
 
-/** Видалення користувача разом з його вакансіями та доступами. Лише для super_admin (перевіряється в роуті). */
+/** Deletes a user together with their vacancies and accesses. super_admin only (checked in the route). */
 export async function deleteUser(db, actorId, targetId) {
   const target = await db.User.findOne({ where: { id: targetId } })
   if (!target) throw new HttpError(404, 'User not found')

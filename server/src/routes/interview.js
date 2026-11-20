@@ -14,8 +14,8 @@ const vacancyBodySchema = z.object({
   description: z.string(),
 }).passthrough()
 
-// Вакансія без провайдера (мок-дані на клієнті): лише поля для генерації питань,
-// готові питання з тіла запиту не приймаються.
+// Vacancy without a provider (mock data on the client): only the fields for question generation,
+// ready-made questions from the request body are not accepted.
 const inlineVacancySchema = z.object({
   id: z.string(),
   title: z.string(),
@@ -46,8 +46,8 @@ const reportSchema = z.object({
 })
 
 /**
- * Зберігає результат співбесіди для адмінського огляду. Провайдер береться з вакансії в БД
- * (а не з тіла запиту) і лише якщо користувач має до нього доступ; помилка збереження звіт не блокує.
+ * Saves the interview result for the admin overview. The provider is taken from the vacancy in the DB
+ * (not from the request body) and only if the user has access to it; a save error does not block the report.
  */
 async function saveInterviewResult(db, userId, vacancyId, report) {
   try {
@@ -88,7 +88,7 @@ export function createInterviewRouter(db, jwtSecret, generator) {
       let vacancy
 
       if ('vacancyId' in parsed.data) {
-        // Вакансія провайдера: беремо з БД і перевіряємо доступ до її провайдера.
+        // Provider vacancy: take it from the DB and check access to its provider.
         vacancy = await getVacancy(db, parsed.data.vacancyId)
         if (!vacancy) {
           res.status(404).json({ error: 'Vacancy not found' })
@@ -107,7 +107,7 @@ export function createInterviewRouter(db, jwtSecret, generator) {
           return
         }
       } else {
-        // Немає провайдера: працюємо з переданою (мок) вакансією, питання генеруються.
+        // No provider: work with the passed (mock) vacancy, questions are generated.
         vacancy = parsed.data.vacancy
       }
 

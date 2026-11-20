@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/Button'
 
 type View = 'text' | 'quiz' | 'result'
 
-/** Сторінка теми: текст, тест і результат (результат зберігається у вкладці «Аналіз»). */
+/** Topic page: text, test and result (the result is saved in the 'Analysis' tab). */
 export function TopicPage() {
   const { slug, id } = useParams()
   const [topic, setTopic] = useState<Topic | null>(null)
@@ -67,7 +67,7 @@ export function TopicPage() {
 
   const completeQuiz = () => {
     setView('result')
-    // Збереження для вкладки «Аналіз»; збій не заважає бачити результат.
+    // Saving for the 'Analysis' tab; a failure does not prevent seeing the result.
     if (slug && id && !isGuest) testResultsApi.saveTopicResult(slug, id, answers).catch(() => {})
   }
 

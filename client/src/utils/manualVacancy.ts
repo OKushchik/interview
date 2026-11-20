@@ -16,7 +16,7 @@ export const createEmptyDrafts = (): ManualDrafts => ({
 
 type Draft = QuizDraft | BotDraft | CodingDraft
 
-/** Чи не заповнено в чернетці жодного поля (correctIndex не враховується). */
+/** Whether the draft has no fields filled in (correctIndex is not counted). */
 export function isDraftEmpty(section: ManualSection, d: Draft): boolean {
   if (section === 'quiz') {
     const q = d as QuizDraft
@@ -27,7 +27,7 @@ export function isDraftEmpty(section: ManualSection, d: Draft): boolean {
   return blank(c.title) && blank(c.description) && blank(c.starterCode)
 }
 
-/** Чи заповнено всі обов'язкові поля (starterCode необов'язковий). */
+/** Whether all required fields are filled in (starterCode is optional). */
 export function isDraftComplete(section: ManualSection, d: Draft): boolean {
   if (section === 'quiz') {
     const q = d as QuizDraft
@@ -38,11 +38,11 @@ export function isDraftComplete(section: ManualSection, d: Draft): boolean {
   return !blank(c.title) && !blank(c.description)
 }
 
-/** Індекс першої частково заповненої чернетки або -1. */
+/** Index of the first partially filled draft, or -1. */
 export const findPartialIndex = (section: ManualSection, list: Draft[]) =>
   list.findIndex((d) => !isDraftEmpty(section, d) && !isDraftComplete(section, d))
 
-/** Лише повністю заповнені чернетки, очищені від пробілів; порожній список — секції не буде. */
+/** Only fully filled drafts, trimmed; an empty list - the section will not exist. */
 export function cleanDrafts(drafts: ManualDrafts) {
   const quiz = drafts.quiz
     .filter((d) => isDraftComplete('quiz', d))
@@ -55,15 +55,15 @@ export function cleanDrafts(drafts: ManualDrafts) {
 }
 
 /**
- * Вакансія створена вручну, якщо в неї є питання, але немає конфігурації співбесіди:
- * AI генерує питання лише для збереженої конфігурації.
+ * A vacancy is manually created if it has questions but no interview configuration:
+ * AI generates questions only for a saved configuration.
  */
 export function isManualVacancy(v: Vacancy): boolean {
   if (v.interviewConfig) return false
   return Boolean(v.quizQuestions?.length || v.botQuestions?.length || v.codingTasks?.length)
 }
 
-/** Чернетки для редагування; порожня секція отримує одну порожню чернетку. */
+/** Drafts for editing; an empty section gets one empty draft. */
 export function draftsFromVacancy(v: Vacancy): ManualDrafts {
   const quiz = (v.quizQuestions ?? []).map((q) => ({ question: q.question, options: [...q.options], correctIndex: q.correctIndex }))
   const bot = (v.botQuestions ?? []).map((q) => ({ question: q.question }))

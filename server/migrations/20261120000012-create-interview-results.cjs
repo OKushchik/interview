@@ -1,6 +1,6 @@
 'use strict'
 
-/** Результати співбесід по вакансіях (вкладка «Результати» для адмінів). Знімок назви вакансії й провайдера. */
+/** Interview results per vacancy ('Results' tab for admins). Snapshot of the vacancy and provider names. */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -12,7 +12,7 @@ module.exports = {
         references: { model: 'users', key: 'id' },
         onDelete: 'CASCADE',
       },
-      // Без FK: результат має пережити видалення вакансії.
+      // No FK: the result must outlive the vacancy deletion.
       vacancy_id: { type: Sequelize.STRING, allowNull: true },
       provider_id: { type: Sequelize.STRING, allowNull: true },
       vacancy_title: { type: Sequelize.STRING, allowNull: false },

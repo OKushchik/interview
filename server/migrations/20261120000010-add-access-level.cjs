@@ -1,8 +1,8 @@
 'use strict'
 
 /**
- * Рівень доступу до провайдера: 'manage' (редагування) або 'view' (лише перегляд).
- * Наявні записи provider_admin — 'manage', решта — 'view'.
+ * Access level to a provider: 'manage' (editing) or 'view' (view only).
+ * Existing provider_admin records become 'manage', the rest 'view'.
  */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {

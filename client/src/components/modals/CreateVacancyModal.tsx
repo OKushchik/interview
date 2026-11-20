@@ -13,7 +13,7 @@ interface CreateVacancyModalProps {
   onNext: (data: VacancyFormData) => void | Promise<void>
   isSubmitting?: boolean
   error?: string | null
-  /** Початкові значення: режим редагування. */
+  /** Initial values: edit mode. */
   initial?: VacancyFormData | null
   heading?: string
   submitLabel?: string
@@ -35,14 +35,14 @@ export function CreateVacancyModal({
   const [configEnabled, setConfigEnabled] = useState(false)
   const [config, setConfig] = useState<InterviewConfig>(DEFAULT_INTERVIEW_CONFIG)
 
-  // Форма заповнюється при відкритті (початкові значення або порожня) і очищається при закритті,
-  // тому при помилці запиту введені дані не втрачаються.
+  // The form is filled on open (initial values or empty) and cleared on close,
+  // so entered data is not lost on a request error.
   useEffect(() => {
     setTitle(isOpen ? initial?.title ?? '' : '')
     setLevel(isOpen ? initial?.level ?? 'middle' : 'middle')
     setSkills(isOpen ? initial?.skills ?? [] : [])
     setConfigEnabled(isOpen ? Boolean(initial?.interviewConfig) : false)
-    // Старі збережені конфігурації можуть не мати codingCount, тому доповнюємо значеннями за замовчуванням.
+    // Old saved configs may lack codingCount, so we fill in defaults.
     setConfig(isOpen ? { ...DEFAULT_INTERVIEW_CONFIG, ...initial?.interviewConfig } : DEFAULT_INTERVIEW_CONFIG)
   }, [isOpen, initial])
 

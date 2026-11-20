@@ -17,9 +17,9 @@ interface CreateTopicModalProps {
 }
 
 /**
- * Створення теми. Два шляхи:
- *  1) AI: назва + опис → AI пише текст і генерує питання;
- *  2) власний текст (вставка або файл) → питання від AI або власні.
+ * Topic creation. Two paths:
+ *  1) AI: title + description -> AI writes the text and generates questions;
+ *  2) own text (paste or file) -> questions from AI or custom.
  */
 export function CreateTopicModal({ isOpen, onClose, onSubmit, isSubmitting = false, error }: CreateTopicModalProps) {
   const [step, setStep] = useState<TopicCreateStep>('mode')
