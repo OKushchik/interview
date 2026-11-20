@@ -10,6 +10,10 @@ export class Topic extends Model {}
 
 export class UserProviderAccess extends Model {}
 
+export class TestResult extends Model {}
+
+export class InterviewResult extends Model {}
+
 export function initModels(sequelize) {
   User.init(
     {
@@ -248,6 +252,61 @@ export function initModels(sequelize) {
     },
   )
 
+  TestResult.init(
+    {
+      id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+      userId: { type: DataTypes.STRING, allowNull: false },
+      topicId: { type: DataTypes.STRING, allowNull: true },
+      providerId: { type: DataTypes.STRING, allowNull: true },
+      topicTitle: { type: DataTypes.STRING, allowNull: false },
+      providerName: { type: DataTypes.STRING, allowNull: true },
+      score: { type: DataTypes.INTEGER, allowNull: false },
+      correctCount: { type: DataTypes.INTEGER, allowNull: false },
+      total: { type: DataTypes.INTEGER, allowNull: false },
+      details: { type: DataTypes.JSONB, allowNull: false },
+      createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    },
+    {
+      sequelize,
+      tableName: 'test_results',
+      modelName: 'TestResult',
+      timestamps: true,
+      updatedAt: false,
+      underscored: true,
+      indexes: [{ fields: ['user_id', 'created_at'] }],
+    },
+  )
+
+  InterviewResult.init(
+    {
+      id: { type: DataTypes.STRING, primaryKey: true, defaultValue: DataTypes.UUIDV4 },
+      userId: { type: DataTypes.STRING, allowNull: false },
+      vacancyId: { type: DataTypes.STRING, allowNull: true },
+      providerId: { type: DataTypes.STRING, allowNull: true },
+      vacancyTitle: { type: DataTypes.STRING, allowNull: false },
+      providerName: { type: DataTypes.STRING, allowNull: true },
+      level: { type: DataTypes.STRING, allowNull: true },
+      score: { type: DataTypes.INTEGER, allowNull: false },
+      report: { type: DataTypes.JSONB, allowNull: false },
+      createdAt: { type: DataTypes.DATE, allowNull: false, defaultValue: DataTypes.NOW },
+    },
+    {
+      sequelize,
+      tableName: 'interview_results',
+      modelName: 'InterviewResult',
+      timestamps: true,
+      updatedAt: false,
+      underscored: true,
+      indexes: [{ fields: ['provider_id', 'score'] }],
+    },
+  )
+
+  User.hasMany(InterviewResult, { foreignKey: 'userId', onDelete: 'CASCADE' })
+  InterviewResult.belongsTo(User, { foreignKey: 'userId' })
+
+  User.hasMany(TestResult, { foreignKey: 'userId', onDelete: 'CASCADE' })
+  TestResult.belongsTo(User, { foreignKey: 'userId' })
+
   Provider.hasMany(Topic, { foreignKey: 'providerId', onDelete: 'CASCADE' })
   Topic.belongsTo(Provider, { foreignKey: 'providerId' })
 
@@ -276,5 +335,5 @@ export function initModels(sequelize) {
     otherKey: 'userId',
   })
 
-  return { User, Vacancy, Provider, UserProviderAccess, Topic }
+  return { User, Vacancy, Provider, UserProviderAccess, Topic, TestResult, InterviewResult }
 }

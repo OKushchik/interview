@@ -23,7 +23,7 @@ export function createRequireProviderAccess(db) {
         res.status(403).json({ error: 'Forbidden' })
         return
       }
-      req.user = { ...req.user, role: user.role, email: user.email, providerId: user.providerId ?? null }
+      req.user = { ...req.user, role: user.role, email: user.email, isGuest: Boolean(user.isGuest), providerId: user.providerId ?? null }
       req.provider = provider
       req.providerLevel = level
       next()

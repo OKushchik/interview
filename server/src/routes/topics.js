@@ -1,10 +1,17 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireProviderAccess, requireProviderManage } from '../middleware/requireProviderAccess.js'
-import { normalizeQuizIds, toTopicDto, topicCreateSchema, topicUpdateSchema } from '../services/schemas.js'
+import {
+  normalizeQuizIds,
+  toTestResultDto,
+  toTopicDto,
+  topicCreateSchema,
+  topicResultSchema,
+  topicUpdateSchema,
+} from '../services/schemas.js'
 
 /**
- * /api/providers/:slug/topics — теми розділу «Аналіз статей» конкретного провайдера.
+ * /api/providers/:slug/topics — теми розділу «Статті» конкретного провайдера.
  * Читати й проходити тест може користувач з доступом до провайдера,
  * створювати/видаляти — лише super_admin і provider_admin.
  * provider_id береться з req.provider, а не з тіла запиту.
@@ -37,6 +44,50 @@ export function createTopicsRouter(db, jwtSecret, generator) {
         return
       }
       res.json({ topic: toTopicDto(row) })
+    } catch (error) {
+      next(error)
+    }
+  })
+
+  // Зберігає результат проходження тесту; бали рахуються тут за питаннями теми.
+  router.post('/:id/results', async (req, res, next) => {
+    try {
+      const parsed = topicResultSchema.safeParse(req.body)
+      if (!parsed.success) {
+        res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
+        return
+      }
+      if (req.user.isGuest) {
+        res.status(403).json({ error: 'Guest results are not saved' })
+        return
+      }
+      const topic = await db.Topic.findOne({ where: { id: req.params.id, providerId: req.provider.id } })
+      const questions = topic?.quizQuestions ?? []
+      if (!topic || questions.length === 0) {
+        res.status(404).json({ error: 'Topic quiz not found' })
+        return
+      }
+
+      const details = questions.map((q) => ({
+        question: q.question,
+        options: q.options,
+        correctIndex: q.correctIndex,
+        selectedIndex: parsed.data.answers[q.id] ?? null,
+        explanation: q.explanation ?? null,
+      }))
+      const correctCount = details.filter((d) => d.selectedIndex === d.correctIndex).length
+      const row = await db.TestResult.create({
+        userId: req.user.id,
+        topicId: topic.id,
+        providerId: req.provider.id,
+        topicTitle: topic.title,
+        providerName: req.provider.name,
+        score: Math.round((correctCount / details.length) * 100),
+        correctCount,
+        total: details.length,
+        details,
+      })
+      res.status(201).json({ result: toTestResultDto(row) })
     } catch (error) {
       next(error)
     }

@@ -10,7 +10,7 @@ export const sequelize = new Sequelize(env.databaseUrl, {
   },
 })
 
-const { User, Vacancy, Provider, UserProviderAccess, Topic } = initModels(sequelize)
+const { User, Vacancy, Provider, UserProviderAccess, Topic, TestResult, InterviewResult } = initModels(sequelize)
 
 function toUserRow(row) {
   const user = row.get({ plain: true })
@@ -118,6 +118,26 @@ export const db = {
     },
     async destroy({ where }) {
       return Topic.destroy({ where })
+    },
+  },
+  TestResult: {
+    async findAll({ where, order } = {}) {
+      const rows = await TestResult.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async create(values) {
+      const row = await TestResult.create(values)
+      return row.get({ plain: true })
+    },
+  },
+  InterviewResult: {
+    async findAll({ where, order } = {}) {
+      const rows = await InterviewResult.findAll({ where, order })
+      return rows.map((row) => row.get({ plain: true }))
+    },
+    async create(values) {
+      const row = await InterviewResult.create(values)
+      return row.get({ plain: true })
     },
   },
   Vacancy: {

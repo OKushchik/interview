@@ -315,3 +315,59 @@ export interface TopicFormData {
   questionCount?: number
   generateQuestions?: boolean
 }
+
+export interface TestResultDetail {
+  question: string
+  options: string[]
+  correctIndex: number
+  /** null — без відповіді. */
+  selectedIndex: number | null
+  explanation: string | null
+}
+
+/** Результат користувача в адмінському огляді (без відповідей по питаннях). */
+export interface TeamResult {
+  id: string
+  userId: string
+  email: string | null
+  topicId: string | null
+  topicTitle: string
+  providerId: string | null
+  providerName: string | null
+  score: number
+  correctCount: number
+  total: number
+  createdAt: string
+}
+
+/** Результат співбесіди в адмінському огляді. */
+export interface InterviewResultSummary {
+  id: string
+  userId: string
+  email: string | null
+  vacancyId: string | null
+  vacancyTitle: string
+  level: SeniorityLevel | null
+  providerId: string | null
+  providerName: string | null
+  score: number
+  createdAt: string
+}
+
+/** Власний результат співбесіди користувача: підсумок разом зі звітом. */
+export interface OwnInterviewResult extends InterviewResultSummary {
+  report: InterviewReport
+}
+
+export interface TestResult {
+  id: string
+  topicId: string | null
+  providerId: string | null
+  topicTitle: string
+  providerName: string | null
+  score: number
+  correctCount: number
+  total: number
+  details: TestResultDetail[]
+  createdAt: string
+}

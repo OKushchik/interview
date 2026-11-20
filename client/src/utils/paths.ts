@@ -6,10 +6,16 @@ export function providerPath(slug: string, section: 'vacancies' | 'interview' | 
   return `/provider/${encodeURIComponent(slug)}/${section}`
 }
 
-/** Розділ «Аналіз статей» без провайдера (немає доступних провайдерів). */
+/** Розділ «Статті» без провайдера (немає доступних провайдерів). */
 export const topicsPath = '/topics'
 
 /** Сторінка теми: /provider/<slug>/topics/<id>. */
 export function topicPath(slug: string, id: string): string {
   return `${providerPath(slug, 'topics')}/${encodeURIComponent(id)}`
 }
+
+/** Вкладка «Результати» для адмінів: результати користувачів по їхніх провайдерах. */
+export const resultsPath = '/results'
+
+/** Вкладка «Аналіз»: результати тестів користувача. */
+export const analysisPath = '/analysis'

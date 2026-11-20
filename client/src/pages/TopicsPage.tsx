@@ -15,7 +15,7 @@ import { CreateTopicModal } from '@/components/modals/CreateTopicModal'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 
-/** Аналіз статей: список тем. Створювати й видаляти можуть лише адміни. */
+/** Статті: список тем. Створювати й видаляти можуть лише адміни. */
 export function TopicsPage() {
   const navigate = useNavigate()
   const { slug } = useParams()
@@ -118,7 +118,7 @@ export function TopicsPage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">Аналіз статей</h2>
+          <h2 className="text-3xl sm:text-4xl font-bold gradient-text mb-4">Статті</h2>
           <p className="text-muted max-w-2xl mx-auto">
             Читайте матеріали за темами та перевіряйте себе в тесті
           </p>

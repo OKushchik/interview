@@ -195,6 +195,64 @@ export const topicUpdateSchema = z.object({
   quizQuestions: z.array(quizQuestionSchema).max(50).nullable().optional().default(null),
 })
 
+// Відповіді: id питання -> індекс обраного варіанта. Бали рахує сервер.
+export const topicResultSchema = z.object({
+  answers: z.record(z.string(), z.number().int().min(0).max(3)),
+})
+
+export function toTestResultDto(row) {
+  return {
+    id: row.id,
+    topicId: row.topicId ?? null,
+    providerId: row.providerId ?? null,
+    topicTitle: row.topicTitle,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    correctCount: row.correctCount,
+    total: row.total,
+    details: row.details,
+    createdAt: row.createdAt,
+  }
+}
+
+/** Власний результат співбесіди користувача — разом зі звітом. */
+export function toOwnInterviewResultDto(row) {
+  return { ...toInterviewResultDto(row, null), report: row.report }
+}
+
+/** Результат співбесіди для адмінського огляду (без повного звіту). */
+export function toInterviewResultDto(row, email) {
+  return {
+    id: row.id,
+    userId: row.userId,
+    email,
+    vacancyId: row.vacancyId ?? null,
+    vacancyTitle: row.vacancyTitle,
+    level: row.level ?? null,
+    providerId: row.providerId ?? null,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    createdAt: row.createdAt,
+  }
+}
+
+/** Результат користувача для адмінського огляду (без відповідей по питаннях). */
+export function toTeamResultDto(row, email) {
+  return {
+    id: row.id,
+    userId: row.userId,
+    email,
+    topicId: row.topicId ?? null,
+    topicTitle: row.topicTitle,
+    providerId: row.providerId ?? null,
+    providerName: row.providerName ?? null,
+    score: row.score,
+    correctCount: row.correctCount,
+    total: row.total,
+    createdAt: row.createdAt,
+  }
+}
+
 export function normalizeQuizIds(questions) {
   return questions.map((question, index) => ({ ...question, id: `q${index + 1}` }))
 }

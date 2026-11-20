@@ -7,6 +7,7 @@ import { canManageProvider } from '@/utils/providerAccess'
 import { TopicContent } from '@/components/topics/TopicContent'
 import { EditTopicModal } from '@/components/modals/EditTopicModal'
 import { topicsApi } from '@/services/topicsApi'
+import { testResultsApi } from '@/services/testResultsApi'
 import { ApiError } from '@/services/api'
 import { providerPath, topicsPath } from '@/utils/paths'
 import { Header } from '@/components/layout/Header'
@@ -16,14 +17,16 @@ import { Button } from '@/components/ui/Button'
 
 type View = 'text' | 'quiz' | 'result'
 
-/** Сторінка теми: текст, тест і результат (результат не зберігається). */
+/** Сторінка теми: текст, тест і результат (результат зберігається у вкладці «Аналіз»). */
 export function TopicPage() {
   const { slug, id } = useParams()
   const [topic, setTopic] = useState<Topic | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('text')
   const [answers, setAnswers] = useState<Record<string, number>>({})
-  const canManage = canManageProvider(useAuthStore((s) => s.user), slug)
+  const user = useAuthStore((s) => s.user)
+  const canManage = canManageProvider(user, slug)
+  const isGuest = Boolean(user?.isGuest)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
@@ -62,6 +65,12 @@ export function TopicPage() {
   const correctCount = questions.filter((q) => answers[q.id] === q.correctIndex).length
   const score = questions.length ? Math.round((correctCount / questions.length) * 100) : 0
 
+  const completeQuiz = () => {
+    setView('result')
+    // Збереження для вкладки «Аналіз»; збій не заважає бачити результат.
+    if (slug && id && !isGuest) testResultsApi.saveTopicResult(slug, id, answers).catch(() => {})
+  }
+
   const startQuiz = () => {
     setAnswers({})
     setView('quiz')
@@ -77,7 +86,7 @@ export function TopicPage() {
           questions={questions}
           answers={answers}
           onAnswer={(questionId, selectedIndex) => setAnswers((prev) => ({ ...prev, [questionId]: selectedIndex }))}
-          onComplete={() => setView('result')}
+          onComplete={completeQuiz}
         />
       )
     }

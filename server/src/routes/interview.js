@@ -45,6 +45,34 @@ const reportSchema = z.object({
   codingAnswers: z.array(z.any()).default([]),
 })
 
+/**
+ * Зберігає результат співбесіди для адмінського огляду. Провайдер береться з вакансії в БД
+ * (а не з тіла запиту) і лише якщо користувач має до нього доступ; помилка збереження звіт не блокує.
+ */
+async function saveInterviewResult(db, userId, vacancyId, report) {
+  try {
+    const user = await db.User.findOne({ where: { id: userId } })
+    if (!user || user.isGuest) return
+    const vacancy = await db.Vacancy.findOne({ where: { id: vacancyId } })
+    if (!vacancy?.providerId) return
+    const provider = await db.Provider.findOne({ where: { id: vacancy.providerId } })
+    if (!provider || !(await canAccessProvider(db, user, provider))) return
+    const max = Number(report?.maxScore) || 0
+    await db.InterviewResult.create({
+      userId,
+      vacancyId: vacancy.id,
+      providerId: provider.id,
+      vacancyTitle: vacancy.title,
+      providerName: provider.name,
+      level: vacancy.level ?? null,
+      score: max > 0 ? Math.round((Number(report.score) / max) * 100) : 0,
+      report,
+    })
+  } catch (error) {
+    console.error('Failed to save interview result:', error.message)
+  }
+}
+
 export function createInterviewRouter(db, jwtSecret, generator) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))
@@ -126,6 +154,7 @@ export function createInterviewRouter(db, jwtSecret, generator) {
           updatedAt: new Date(),
         },
       })
+      await saveInterviewResult(db, req.user.id, parsed.data.vacancy.id, report)
       res.json({ report })
     } catch (error) {
       next(error)
