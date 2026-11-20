@@ -21,7 +21,7 @@ interface Draft {
   providerIds: string[]
 }
 
-/** Вкладка «Користувачі»: зміна ролі та прив'язка provider_admin до одного чи кількох провайдерів. */
+/** 'Users' tab: role change and binding a provider_admin to one or several providers. */
 export function UsersTab() {
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [users, setUsers] = useState<AdminUser[]>([])

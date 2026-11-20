@@ -4,7 +4,7 @@ import { createRequireRole } from '../middleware/requireRole.js'
 import { userPatchSchema } from '../services/schemas.js'
 import { deleteUser, listUsers, updateUser } from '../services/userService.js'
 
-/** /api/users: керування користувачами (лише super_admin). */
+/** /api/users: user management (super_admin only). */
 export function createUsersRouter(db, jwtSecret) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))

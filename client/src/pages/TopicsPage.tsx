@@ -15,7 +15,7 @@ import { CreateTopicModal } from '@/components/modals/CreateTopicModal'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 
-/** Статті: список тем. Створювати й видаляти можуть лише адміни. */
+/** Articles: topic list. Only admins can create and delete. */
 export function TopicsPage() {
   const navigate = useNavigate()
   const { slug } = useParams()

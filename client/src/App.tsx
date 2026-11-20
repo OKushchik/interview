@@ -33,7 +33,7 @@ export function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<HomeRedirect />} />
-          {/* Без провайдера: мок-вакансії */}
+          {/* No provider: mock vacancies */}
           <Route path="/vacancies" element={<VacanciesPage />} />
           <Route path="/interview" element={<InterviewPage />} />
           <Route path="/provider/:slug/vacancies" element={<VacanciesPage />} />

@@ -16,7 +16,7 @@ interface ManualVacancyModalProps {
   onSubmit: (data: VacancyFormData) => void | Promise<void>
   isSubmitting?: boolean
   error?: string | null
-  /** Вакансія для редагування; без неї степер створює нову. */
+  /** Vacancy to edit; without it the stepper creates a new one. */
   initial?: Vacancy | null
   heading?: string
   submitLabel?: string
@@ -24,7 +24,7 @@ interface ManualVacancyModalProps {
 
 const STEPS: ManualStep[] = ['details', ...MANUAL_SECTIONS]
 
-/** Степер створення вакансії вручну: деталі → питання Quiz → питання Bot → Coding Task. */
+/** Manual vacancy creation stepper: details -> Quiz questions -> Bot questions -> Coding Task. */
 export function ManualVacancyModal({
   isOpen,
   onClose,
@@ -44,7 +44,7 @@ export function ManualVacancyModal({
   const [localError, setLocalError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Заповнюється при відкритті (дані вакансії або порожньо) і скидається при закритті.
+    // Filled on open (vacancy data or empty) and reset on close.
     const source = isOpen ? initial : null
     setStep('details')
     setTitle(source?.title ?? '')
@@ -104,7 +104,7 @@ export function ManualVacancyModal({
     setIndex(index + 1)
   }
 
-  /** Перевіряє секцію: порожні питання відкидаються, частково заповнене — помилка. */
+  /** Validates a section: empty questions are dropped, a partially filled one is an error. */
   const finishSection = (): ManualDrafts | null => {
     if (!section) return drafts
     const partial = findPartialIndex(section, list)

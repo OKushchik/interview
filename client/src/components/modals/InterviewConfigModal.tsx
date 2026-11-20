@@ -28,14 +28,14 @@ export function InterviewConfigModal({
 }: InterviewConfigModalProps) {
   const [config, setConfig] = useState<InterviewConfig>(DEFAULT_INTERVIEW_CONFIG)
 
-  // Максимум — кількість питань цього типу, що збережені в БД для вакансії.
+  // The maximum is the number of questions of this type stored in the DB for the vacancy.
   const stored = config.type === 'quiz' ? vacancy?.quizQuestions : vacancy?.botQuestions
   const limits = {
     questions: stored?.length || GENERATED_MAX,
     coding: vacancy?.codingTasks?.length || GENERATED_MAX,
   }
 
-  // При кожному відкритті форма починається з конфігурації вакансії (якщо є) або значень за замовчуванням.
+  // On every open the form starts from the vacancy's config (if any) or defaults.
   useEffect(() => {
     if (!isOpen) return
     setConfig({ ...DEFAULT_INTERVIEW_CONFIG, ...vacancy?.interviewConfig })
@@ -43,7 +43,7 @@ export function InterviewConfigModal({
 
   const questionCount = clamp(config.questionCount, limits.questions, 1)
   const codingCount = clamp(config.codingCount ?? 1, limits.coding, 1)
-  // Вакансія, створена вручну без завдань з кодингу, проходиться без секції кодингу (AI її не генерує).
+  // A manually created vacancy without coding tasks is passed without the coding section (AI does not generate it).
   const noCoding = vacancy !== null && isManualVacancy(vacancy) && !vacancy.codingTasks?.length
   const enableCoding = config.enableCoding && !noCoding
   const total = questionCount + (enableCoding ? codingCount : 0)

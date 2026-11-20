@@ -1,6 +1,6 @@
 'use strict'
 
-/** Теми для розділу «Аналіз статей»: текст + тестові питання. */
+/** Topics for the 'Article analysis' section: text + test questions. */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {

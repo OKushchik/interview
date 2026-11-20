@@ -12,7 +12,7 @@ export function Header() {
   const user = useAuthStore((s) => s.user)
   const logout = useAuthStore((s) => s.logout)
   const isDark = theme === 'dark'
-  // Сторінка доступів — для провайдера, яким адмін керує (не «лише перегляд»).
+  // Access page - for the provider the admin manages (not view-only).
   const ownProvider = user?.accessibleProviders?.find((p) => p.canManage)
 
   const onLogout = async () => {

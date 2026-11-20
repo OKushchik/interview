@@ -26,7 +26,7 @@ const draftsFromTopic = (topic: Topic): QuizDraft[] => {
   return drafts.length ? drafts : [EMPTY_FACTORIES.quiz()]
 }
 
-/** Редагування теми: назва, опис, текст і тестові питання. */
+/** Topic editing: title, description, text and test questions. */
 export function EditTopicModal({ topic, isOpen, onClose, onSubmit, isSubmitting = false, error }: EditTopicModalProps) {
   const [title, setTitle] = useState(topic.title)
   const [description, setDescription] = useState(topic.description)

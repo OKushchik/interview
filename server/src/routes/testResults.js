@@ -4,11 +4,11 @@ import { createRequireRole } from '../middleware/requireRole.js'
 import { adminProviderLevels } from '../services/providerAccess.js'
 import { toInterviewResultDto, toOwnInterviewResultDto, toTeamResultDto, toTestResultDto } from '../services/schemas.js'
 
-/** /api/test-results — результати тестів поточного користувача (вкладка «Аналіз»). */
+/** /api/test-results - test results of the current user ('Analysis' tab). */
 export function createTestResultsRouter(db, jwtSecret) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))
-  // У гостя результати не зберігаються, тож аналізу в нього немає.
+  // Results are not saved for a guest, so they have no analysis.
   router.use(async (req, res, next) => {
     try {
       const user = await db.User.findOne({ where: { id: req.user.id } })
@@ -34,7 +34,7 @@ export function createTestResultsRouter(db, jwtSecret) {
     }
   })
 
-  // Власні результати співбесід користувача (вкладка «Аналіз» → «Співбесіди»).
+  // The user's own interview results ('Analysis' -> 'Interviews' tab).
   router.get('/interviews', async (req, res, next) => {
     try {
       const rows = await db.InterviewResult.findAll({
@@ -47,11 +47,11 @@ export function createTestResultsRouter(db, jwtSecret) {
     }
   })
 
-  // Результати користувачів по провайдерах адміна (де він може керувати), від найкращих.
-  // super_admin бачить усі; ?providerId= звужує до одного провайдера.
+  // User results across the admin's providers (where they can manage), best first.
+  // super_admin sees all; ?providerId= narrows to one provider.
   const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
 
-  /** Відповідає на запит списком результатів моделі; `toDto(row, email)` і `tiebreak` задають вигляд і сортування. */
+  /** Responds with a list of model results; `toDto(row, email)` and `tiebreak` define the shape and sorting. */
   const teamHandler = (model, toDto, tiebreak) => async (req, res, next) => {
     try {
       const user = await db.User.findOne({ where: { id: req.user.id } })

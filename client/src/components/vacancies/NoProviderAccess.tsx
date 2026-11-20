@@ -3,7 +3,7 @@ import { Lock } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 
 interface NoProviderAccessProps {
-  /** Куди повернутися: перший доступний провайдер або мок-список. */
+  /** Where to go back: the first available provider or the mock list. */
   backTo: string
 }
 

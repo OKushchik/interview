@@ -1,6 +1,6 @@
 import { getProviderLevel } from '../services/providerAccess.js'
 
-/** Потребує попереднього requireAuth. За :slug знаходить компанію й перевіряє доступ; кладе її в req.provider. */
+/** Requires requireAuth beforehand. Finds the provider by :slug and checks access; puts it in req.provider. */
 export function createRequireProviderAccess(db) {
   return async function requireProviderAccess(req, res, next) {
     try {
@@ -33,7 +33,7 @@ export function createRequireProviderAccess(db) {
   }
 }
 
-/** Після requireProviderAccess: пропускає лише з правом редагування цього провайдера (не «лише перегляд»). */
+/** After requireProviderAccess: lets through only those with edit rights to this provider (not view-only). */
 export function requireProviderManage(req, res, next) {
   if (req.providerLevel !== 'manage') {
     res.status(403).json({ error: 'Forbidden' })

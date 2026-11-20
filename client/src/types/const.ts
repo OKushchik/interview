@@ -49,7 +49,7 @@ export const SENIORITY_LEVEL_OPTIONS: { value: SeniorityLevel; label: string; em
   { value: 'senior', label: 'Senior', emoji: '🔴' },
 ]
 
-/** Якщо в БД питань немає, їх згенерує сервер, тому ліміт — звичайний максимум 20. */
+/** If the DB has no questions, the server generates them, so the limit is the usual maximum of 20. */
 export const GENERATED_MAX = 20
 
 export const MODAL_SIZES: Record<ModalSize, string> = {
@@ -92,7 +92,7 @@ export const MANUAL_SECTION_LABELS: Record<ManualSection, string> = {
 export const TEXTAREA_CLASS =
   'w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border text-text placeholder:text-muted/50 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/30 transition-colors'
 
-/** Максимальна довжина тексту теми (збігається з сервером). */
+/** Maximum topic text length (matches the server). */
 export const TOPIC_CONTENT_MAX = 50000
 
 export const TOPIC_QUESTION_COUNT_DEFAULT = 10

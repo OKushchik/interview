@@ -5,7 +5,7 @@ import { analysisPath, providerPath, resultsPath, topicsPath, vacanciesPath } fr
 
 const LINK_BASE = 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-colors'
 
-/** Перемикач розділів: вакансії / аналіз статей. */
+/** Section switcher: vacancies / article analysis. */
 export function MainNav() {
   const isGuest = useAuthStore((s) => Boolean(s.user?.isGuest))
   const isAdmin = useAuthStore((s) => s.user?.role === 'super_admin' || s.user?.role === 'provider_admin')

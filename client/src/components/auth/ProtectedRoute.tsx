@@ -4,7 +4,7 @@ import type { UserRole } from '@/types'
 import { useAuthStore } from '@/store/authStore'
 
 interface ProtectedRouteProps {
-  /** Якщо задано, доступ лише для цих ролей; інші потрапляють на `/`. */
+  /** If set, access is only for these roles; others are redirected to `/`. */
   roles?: UserRole[]
 }
 

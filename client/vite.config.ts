@@ -5,7 +5,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // .env лишається в корені репозиторію (поруч із .env.example)
+  // .env stays in the repository root (next to .env.example)
   envDir: '..',
   resolve: {
     alias: {

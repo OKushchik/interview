@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Input } from '@/components/ui/Input'
 
-/** /provider/:slug/access: provider_admin видає й відкликає доступи лише до свого провайдера. */
+/** /provider/:slug/access: provider_admin grants and revokes accesses to their own provider only. */
 export function ProviderAccessPage() {
   const { slug = '' } = useParams()
   const [entries, setEntries] = useState<AccessEntry[]>([])

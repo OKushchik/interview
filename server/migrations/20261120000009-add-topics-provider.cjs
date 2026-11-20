@@ -1,6 +1,6 @@
 'use strict'
 
-/** Теми належать провайдеру, як і вакансії. Наявні теми переходять до провайдера автора (якщо він є). */
+/** Topics belong to a provider, like vacancies. Existing topics move to the author's provider (if any). */
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {

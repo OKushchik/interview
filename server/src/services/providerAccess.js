@@ -1,6 +1,6 @@
 /**
- * Рівні доступу провайдера provider_admin: Map<providerId, 'manage' | 'view'>.
- * Основний провайдер (users.provider_id) — завжди 'manage'; решта — із user_provider_access.access_level.
+ * Access levels of a provider_admin: Map<providerId, 'manage' | 'view'>.
+ * The primary provider (users.provider_id) is always 'manage'; the rest come from user_provider_access.access_level.
  */
 export async function adminProviderLevels(db, user) {
   const rows = await db.UserProviderAccess.findAll({ where: { userId: user.id } })
@@ -9,7 +9,7 @@ export async function adminProviderLevels(db, user) {
   return levels
 }
 
-/** Рівень доступу користувача до компанії: 'manage', 'view' або null (доступу немає). */
+/** The user's access level to a provider: 'manage', 'view' or null (no access). */
 export async function getProviderLevel(db, user, provider) {
   if (user.role === 'super_admin') return 'manage'
   if (user.role === 'provider_admin') return (await adminProviderLevels(db, user)).get(provider.id) ?? null
@@ -20,12 +20,12 @@ export async function getProviderLevel(db, user, provider) {
   return null
 }
 
-/** Чи має користувач доступ до компанії (перегляд або керування). */
+/** Whether the user has access to a provider (view or manage). */
 export async function canAccessProvider(db, user, provider) {
   return (await getProviderLevel(db, user, provider)) !== null
 }
 
-/** Компанії, доступні користувачу, з прапорцем canManage (для select на клієнті). */
+/** Providers available to the user, with a canManage flag (for the select on the client). */
 export async function listAccessibleProviders(db, user) {
   if (user.role === 'super_admin') {
     const all = await db.Provider.findAll({ order: [['name', 'ASC']] })

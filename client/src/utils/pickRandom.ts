@@ -1,4 +1,4 @@
-/** Випадково обирає count елементів зі списку (Fisher-Yates), оригінал не змінює. */
+/** Randomly picks count items from a list (Fisher-Yates), does not mutate the original. */
 export function pickRandom<T>(list: T[], count: number): T[] {
   const copy = [...list]
   for (let i = copy.length - 1; i > 0; i--) {

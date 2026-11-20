@@ -5,7 +5,7 @@ import { createRequireProviderAccess, requireProviderManage } from '../middlewar
 import { accessGrantSchema } from '../services/schemas.js'
 import { grantAccess, listProviderAccess, revokeAccess } from '../services/accessService.js'
 
-/** /api/providers/:slug/access: super_admin (будь-яка компанія) і provider_admin (лише своя). */
+/** /api/providers/:slug/access: super_admin (any provider) and provider_admin (own only). */
 export function createAccessRouter(db, jwtSecret) {
   const router = Router({ mergeParams: true })
   router.use(createRequireAuth(jwtSecret))

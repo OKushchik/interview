@@ -10,7 +10,7 @@ interface MultiSelectProps {
   'aria-label'?: string
 }
 
-/** Випадаючий список з чекбоксами для вибору кількох значень. */
+/** Dropdown with checkboxes for selecting multiple values. */
 export function MultiSelect({ options, value, onChange, placeholder = 'Оберіть', disabled, 'aria-label': ariaLabel }: MultiSelectProps) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)

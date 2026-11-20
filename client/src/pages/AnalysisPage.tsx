@@ -16,7 +16,7 @@ const TABS: { id: Tab; label: string }[] = [
 
 const formatDate = (iso: string) => new Date(iso).toLocaleString('uk-UA', { dateStyle: 'medium', timeStyle: 'short' })
 
-/** Завантажує список один раз при першому відкритті вкладки. */
+/** Loads the list once on the first open of the tab. */
 function useResults<T>(load: () => Promise<T[]>, enabled: boolean) {
   const [results, setResults] = useState<T[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -154,7 +154,7 @@ function InterviewResults({ results }: { results: OwnInterviewResult[] }) {
   )
 }
 
-/** Вкладка «Аналіз»: історія власних результатів — співбесіди та тести за статтями. */
+/** 'Analysis' tab: history of own results - interviews and article tests. */
 export function AnalysisPage() {
   const isGuest = useAuthStore((s) => Boolean(s.user?.isGuest))
   const [tab, setTab] = useState<Tab>('interviews')
@@ -162,7 +162,7 @@ export function AnalysisPage() {
   const articles = useResults(testResultsApi.list, tab === 'articles' && !isGuest)
   const current = tab === 'interviews' ? interviews : articles
 
-  // Гість результатів не має: прямий перехід за посиланням веде на головну.
+  // A guest has no results: a direct link navigation leads to the home page.
   if (isGuest) return <Navigate to="/" replace />
 
   return (
@@ -193,7 +193,7 @@ export function AnalysisPage() {
         {current.results?.length === 0 && (
           <p className="text-muted">{tab === 'interviews' ? 'Ви ще не проходили співбесід.' : 'Ви ще не проходили тестів.'}</p>
         )}
-        {/* Список — вузька колонка, притиснута до лівого краю (як і решта контенту сторінки). */}
+        {/* List - a narrow column pinned to the left edge (like the rest of the page content). */}
         <div className="max-w-3xl space-y-6">
           {tab === 'interviews' && interviews.results && <InterviewResults results={interviews.results} />}
           {tab === 'articles' && articles.results && <ArticleResults results={articles.results} />}

@@ -12,7 +12,7 @@ const TABS: { value: AdminTab; label: string }[] = [
   { value: 'access', label: 'Доступи' },
 ]
 
-/** Адмін-панель super_admin: провайдери, користувачі, доступи. */
+/** super_admin admin panel: providers, users, accesses. */
 export function AdminPage() {
   const [tab, setTab] = useState<AdminTab>('providers')
 

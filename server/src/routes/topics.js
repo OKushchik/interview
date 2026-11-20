@@ -11,14 +11,14 @@ import {
 } from '../services/schemas.js'
 
 /**
- * /api/providers/:slug/topics — теми розділу «Статті» конкретного провайдера.
- * Читати й проходити тест може користувач з доступом до провайдера,
- * створювати/видаляти — лише super_admin і provider_admin.
- * provider_id береться з req.provider, а не з тіла запиту.
+ * /api/providers/:slug/topics - topics of the 'Articles' section of a specific provider.
+ * A user with access to the provider can read and take the test,
+ * creating/deleting is for super_admin and provider_admin only.
+ * provider_id is taken from req.provider, not from the request body.
  */
 export function createTopicsRouter(db, jwtSecret, generator) {
   const router = Router({ mergeParams: true })
-  // Запис лише з рівнем 'manage' для цього провайдера (provider_admin «лише перегляд» — 403).
+  // Writing only with the 'manage' level for this provider (view-only provider_admin gets 403).
   const requireAdmin = requireProviderManage
 
   router.use(createRequireAuth(jwtSecret))
@@ -49,7 +49,7 @@ export function createTopicsRouter(db, jwtSecret, generator) {
     }
   })
 
-  // Зберігає результат проходження тесту; бали рахуються тут за питаннями теми.
+  // Saves the test result; the score is calculated here from the topic's questions.
   router.post('/:id/results', async (req, res, next) => {
     try {
       const parsed = topicResultSchema.safeParse(req.body)
@@ -109,7 +109,7 @@ export function createTopicsRouter(db, jwtSecret, generator) {
 
       let quizQuestions = input.quizQuestions ? normalizeQuizIds(input.quizQuestions) : null
       if (!quizQuestions && input.generateQuestions) {
-        // Збій генерації питань не блокує створення теми.
+        // A question generation failure does not block topic creation.
         try {
           quizQuestions = await generator.generateTopicQuiz({ title: input.title, content }, input.questionCount)
         } catch (error) {

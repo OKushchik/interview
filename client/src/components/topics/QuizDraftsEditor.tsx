@@ -10,7 +10,7 @@ interface QuizDraftsEditorProps {
   onChange: (drafts: QuizDraft[]) => void
 }
 
-/** Редактор власних тестових питань (4 варіанти, один правильний). */
+/** Editor of custom test questions (4 options, one correct). */
 export function QuizDraftsEditor({ drafts, onChange }: QuizDraftsEditorProps) {
   const patch = (index: number, change: Partial<QuizDraft>) =>
     onChange(drafts.map((d, i) => (i === index ? { ...d, ...change } : d)))

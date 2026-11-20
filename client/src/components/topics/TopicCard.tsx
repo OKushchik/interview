@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 interface TopicCardProps {
   topic: Topic
   onOpen: (topic: Topic) => void
-  /** Якщо передано, показується кнопка «Видалити» (лише для адмінів). */
+  /** If passed, a 'Delete' button is shown (admins only). */
   onDelete?: (topic: Topic) => void
 }
 

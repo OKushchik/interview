@@ -15,7 +15,7 @@ function badRequest(res, parsed) {
   res.status(400).json({ error: parsed.error.issues[0]?.message ?? 'Invalid input' })
 }
 
-/** /api/providers: CRUD для super_admin і GET /mine для select. */
+/** /api/providers: CRUD for super_admin and GET /mine for the select. */
 export function createProvidersRouter(db, jwtSecret) {
   const router = Router()
   const requireSuperAdmin = createRequireRole(db)('super_admin')
