@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
 import { createRequireRole } from '../middleware/requireRole.js'
-import { createRequireProviderAccess } from '../middleware/requireProviderAccess.js'
+import { createRequireProviderAccess, requireProviderManage } from '../middleware/requireProviderAccess.js'
 import { accessGrantSchema } from '../services/schemas.js'
 import { grantAccess, listProviderAccess, revokeAccess } from '../services/accessService.js'
 
@@ -11,6 +11,7 @@ export function createAccessRouter(db, jwtSecret) {
   router.use(createRequireAuth(jwtSecret))
   router.use(createRequireRole(db)('super_admin', 'provider_admin'))
   router.use(createRequireProviderAccess(db))
+  router.use(requireProviderManage)
 
   router.get('/', async (req, res, next) => {
     try {

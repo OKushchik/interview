@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, Pencil, XCircle } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import type { Topic, TopicUpdateData } from '@/types'
 import { useAuthStore } from '@/store/authStore'
+import { canManageProvider } from '@/utils/providerAccess'
 import { TopicContent } from '@/components/topics/TopicContent'
 import { EditTopicModal } from '@/components/modals/EditTopicModal'
 import { topicsApi } from '@/services/topicsApi'
@@ -22,8 +23,7 @@ export function TopicPage() {
   const [error, setError] = useState<string | null>(null)
   const [view, setView] = useState<View>('text')
   const [answers, setAnswers] = useState<Record<string, number>>({})
-  const role = useAuthStore((s) => s.user?.role)
-  const canManage = role === 'super_admin' || role === 'provider_admin'
+  const canManage = canManageProvider(useAuthStore((s) => s.user), slug)
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)

@@ -94,11 +94,11 @@ export function ProviderAccessPage() {
         ) : (
           <>
             <Card>
-              <h3 className="text-lg font-semibold text-text mb-4">Видати доступ користувачу</h3>
+              <h3 className="text-lg font-semibold text-text mb-4">Видати доступ на перегляд</h3>
               <form onSubmit={onGrant} className="flex flex-col sm:flex-row gap-3 sm:items-end">
                 <div className="flex-1">
                   <Input
-                    label="Email користувача"
+                    label="Email користувача або адміна іншого провайдера"
                     type="email"
                     placeholder="user@example.com"
                     value={email}

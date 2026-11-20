@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/utils/errors'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { MultiSelect } from '@/components/ui/MultiSelect'
 import { Select } from '@/components/ui/Select'
 
 const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
@@ -17,10 +18,10 @@ const ROLE_OPTIONS: { value: UserRole; label: string }[] = [
 
 interface Draft {
   role: UserRole
-  providerId: string
+  providerIds: string[]
 }
 
-/** Вкладка «Користувачі»: зміна ролі та прив'язка provider_admin до провайдера. */
+/** Вкладка «Користувачі»: зміна ролі та прив'язка provider_admin до одного чи кількох провайдерів. */
 export function UsersTab() {
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [users, setUsers] = useState<AdminUser[]>([])
@@ -48,10 +49,11 @@ export function UsersTab() {
     void load()
   }, [load])
 
-  const draftFor = (u: AdminUser): Draft => drafts[u.id] ?? { role: u.role, providerId: u.providerId ?? '' }
+  const draftFor = (u: AdminUser): Draft => drafts[u.id] ?? { role: u.role, providerIds: u.providerIds ?? [] }
   const isDirty = (u: AdminUser) => {
     const d = draftFor(u)
-    return d.role !== u.role || (d.role === 'provider_admin' && d.providerId !== (u.providerId ?? ''))
+    const same = d.providerIds.length === u.providerIds.length && d.providerIds.every((id) => u.providerIds.includes(id))
+    return d.role !== u.role || (d.role === 'provider_admin' && !same)
   }
   const setDraft = (u: AdminUser, patch: Partial<Draft>) =>
     setDrafts((prev) => ({ ...prev, [u.id]: { ...draftFor(u), ...patch } }))
@@ -63,7 +65,7 @@ export function UsersTab() {
     try {
       const updated = await usersApi.update(u.id, {
         role: d.role,
-        ...(d.role === 'provider_admin' ? { providerId: d.providerId || null } : {}),
+        ...(d.role === 'provider_admin' ? { providerIds: d.providerIds } : {}),
       })
       setUsers((prev) => prev.map((x) => (x.id === u.id ? updated : x)))
       setDrafts((prev) => {
@@ -95,10 +97,7 @@ export function UsersTab() {
     }
   }
 
-  const providerOptions = [
-    { value: '', label: 'Оберіть провайдера' },
-    ...providers.map((p) => ({ value: p.id, label: p.name })),
-  ]
+  const providerOptions = providers.map((p) => ({ value: p.id, label: p.name }))
 
   return (
     <Card>
@@ -113,7 +112,7 @@ export function UsersTab() {
           {users.map((u) => {
             const d = draftFor(u)
             const locked = u.isGuest || u.id === currentUserId
-            const needsProvider = d.role === 'provider_admin' && !d.providerId
+            const needsProvider = d.role === 'provider_admin' && d.providerIds.length === 0
             return (
               <li key={u.id} className="py-4 grid grid-cols-1 lg:grid-cols-[1fr_14rem_auto_auto] gap-3 lg:items-center">
                 <div className="min-w-0">
@@ -133,12 +132,13 @@ export function UsersTab() {
                     onChange={(e) => setDraft(u, { role: e.target.value as UserRole })}
                   />
                   {d.role === 'provider_admin' && (
-                    <Select
-                      aria-label="Провайдер"
-                      value={d.providerId}
+                    <MultiSelect
+                      aria-label="Провайдери"
+                      placeholder="Оберіть провайдерів"
+                      value={d.providerIds}
                       options={providerOptions}
                       disabled={locked}
-                      onChange={(e) => setDraft(u, { providerId: e.target.value })}
+                      onChange={(providerIds) => setDraft(u, { providerIds })}
                     />
                   )}
                 </div>

@@ -24,7 +24,8 @@ export function AccessTab() {
     Promise.all([providersApi.list(), usersApi.list()])
       .then(([p, u]) => {
         setProviders(p)
-        setUsers(u.filter((x) => x.role === 'user' && !x.isGuest))
+        // Перегляд можна дати і звичайним користувачам, і адмінам інших провайдерів.
+        setUsers(u.filter((x) => (x.role === 'user' || x.role === 'provider_admin') && !x.isGuest))
         setSlug((current) => current || p[0]?.slug || '')
       })
       .catch((e) => setError(getErrorMessage(e, 'Не вдалося завантажити дані')))
@@ -83,9 +84,12 @@ export function AccessTab() {
   }
 
   const granted = new Set(entries.map((e) => e.userId))
+  const providerId = providers.find((p) => p.slug === slug)?.id
+  // Адміна, який уже керує цим провайдером, у списку не показуємо.
+  const candidates = users.filter((u) => !granted.has(u.id) && !(providerId && u.providerIds.includes(providerId)))
   const userOptions = [
     { value: '', label: 'Оберіть користувача' },
-    ...users.filter((u) => !granted.has(u.id)).map((u) => ({ value: u.id, label: u.email })),
+    ...candidates.map((u) => ({ value: u.id, label: u.role === 'provider_admin' ? `${u.email} (адмін)` : u.email })),
   ]
 
   return (

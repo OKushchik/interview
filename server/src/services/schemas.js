@@ -102,8 +102,15 @@ export const userPatchSchema = z
   .object({
     role: z.enum(['super_admin', 'provider_admin', 'user']).optional(),
     providerId: z.string().min(1).nullable().optional(),
+    // provider_admin може керувати кількома провайдерами; перший стає основним (providerId).
+    providerIds: z.array(z.string().min(1)).max(100).optional(),
+    // Провайдери лише для перегляду (без права редагування).
+    viewProviderIds: z.array(z.string().min(1)).max(100).optional(),
   })
-  .refine((v) => v.role !== undefined || v.providerId !== undefined, 'Nothing to update')
+  .refine(
+    (v) => v.role !== undefined || v.providerId !== undefined || v.providerIds !== undefined || v.viewProviderIds !== undefined,
+    'Nothing to update',
+  )
 
 // Доступ видається за id користувача (super_admin обирає зі списку) або за email
 // (provider_admin не бачить список усіх користувачів).

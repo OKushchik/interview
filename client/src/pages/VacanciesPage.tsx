@@ -7,6 +7,7 @@ import { isManualVacancy } from '@/utils/manualVacancy'
 import { alignConfig, buildQuestionsJson, downloadJson, parseQuestionsJson } from '@/utils/vacancyJson'
 import { MOCK_VACANCIES } from '@/data/mockVacancies'
 import { useAuthStore } from '@/store/authStore'
+import { canManageProvider } from '@/utils/providerAccess'
 import { useInterviewStore } from '@/store/interviewStore'
 import { generateQuestions } from '@/services/aiService'
 import { vacanciesApi } from '@/services/vacanciesApi'
@@ -32,8 +33,7 @@ export function VacanciesPage() {
   const user = useAuthStore((s) => s.user)
   const providers = user?.accessibleProviders ?? []
   // Створювати, редагувати й видаляти вакансії можуть лише адміни; звичайний користувач бачить лише «Пройти співбесіду».
-  const canManageVacancies =
-    Boolean(slug) && (user?.role === 'super_admin' || user?.role === 'provider_admin')
+  const canManageVacancies = canManageProvider(user, slug)
   const canCreateVacancy = canManageVacancies
   const { startSession, setSession, setGenerating, isGenerating } = useInterviewStore()
 

@@ -3,6 +3,7 @@ import { Plus } from 'lucide-react'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { Topic, TopicFormData } from '@/types'
 import { useAuthStore } from '@/store/authStore'
+import { canManageProvider } from '@/utils/providerAccess'
 import { topicsApi } from '@/services/topicsApi'
 import { ApiError } from '@/services/api'
 import { providerPath, topicPath } from '@/utils/paths'
@@ -19,8 +20,8 @@ export function TopicsPage() {
   const navigate = useNavigate()
   const { slug } = useParams()
   const providers = useAuthStore((s) => s.user?.accessibleProviders) ?? []
-  const role = useAuthStore((s) => s.user?.role)
-  const canManage = Boolean(slug) && (role === 'super_admin' || role === 'provider_admin')
+  const user = useAuthStore((s) => s.user)
+  const canManage = canManageProvider(user, slug)
 
   const [topics, setTopics] = useState<Topic[]>([])
   const [loading, setLoading] = useState(Boolean(slug))

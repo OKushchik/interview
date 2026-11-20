@@ -163,6 +163,8 @@ export interface Provider {
   id: string
   name: string
   slug: string
+  /** false — доступ лише для перегляду. */
+  canManage?: boolean
 }
 
 export interface AuthUser {
@@ -245,6 +247,10 @@ export interface AdminUser {
   email: string
   role: UserRole
   providerId: string | null
+  /** Усі провайдери provider_admin. */
+  providerIds: string[]
+  /** Провайдери provider_admin лише для перегляду. */
+  viewProviderIds: string[]
   isGuest: boolean
   emailVerified: boolean
   createdAt: string
@@ -253,6 +259,8 @@ export interface AdminUser {
 export interface UserPatch {
   role?: UserRole
   providerId?: string | null
+  providerIds?: string[]
+  viewProviderIds?: string[]
 }
 
 export interface AccessEntry {

@@ -1,4 +1,4 @@
-import { canAccessProvider } from '../services/providerAccess.js'
+import { getProviderLevel } from '../services/providerAccess.js'
 
 /** Потребує попереднього requireAuth. За :slug знаходить компанію й перевіряє доступ; кладе її в req.provider. */
 export function createRequireProviderAccess(db) {
@@ -18,15 +18,26 @@ export function createRequireProviderAccess(db) {
         res.status(404).json({ error: 'Provider not found' })
         return
       }
-      if (!(await canAccessProvider(db, user, provider))) {
+      const level = await getProviderLevel(db, user, provider)
+      if (!level) {
         res.status(403).json({ error: 'Forbidden' })
         return
       }
       req.user = { ...req.user, role: user.role, email: user.email, providerId: user.providerId ?? null }
       req.provider = provider
+      req.providerLevel = level
       next()
     } catch (error) {
       next(error)
     }
   }
+}
+
+/** Після requireProviderAccess: пропускає лише з правом редагування цього провайдера (не «лише перегляд»). */
+export function requireProviderManage(req, res, next) {
+  if (req.providerLevel !== 'manage') {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
+  next()
 }

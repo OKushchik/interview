@@ -233,6 +233,26 @@ describe('multitenant API', () => {
       await call('adminA', 'DELETE', `/api/providers/acme/access/${ids.userNone.id}`)
     })
 
+    it('provider_admin of another provider can be given view-only access', async () => {
+      await call('root', 'PATCH', `/api/users/${ids.userNone.id}`, { role: 'provider_admin', providerId: ids.b.id })
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 403)
+
+      const grant = await call('adminA', 'POST', '/api/providers/acme/access', { userId: ids.userNone.id })
+      assert.equal(grant.status, 201)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 200)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/access')).status, 403)
+      const write = await call('userNone', 'POST', '/api/providers/acme/vacancies', { title: 'X', level: 'middle', skills: ['TS'] })
+      assert.equal(write.status, 403)
+
+      // власні права на свій провайдер не зачіпаються і не відкликаються через доступи
+      assert.equal((await call('adminA', 'POST', '/api/providers/acme/access', { userId: ids.adminA.id })).status, 400)
+      assert.equal((await call('root', 'DELETE', `/api/providers/beta/access/${ids.userNone.id}`)).status, 404)
+
+      assert.equal((await call('adminA', 'DELETE', `/api/providers/acme/access/${ids.userNone.id}`)).status, 204)
+      assert.equal((await call('userNone', 'GET', '/api/providers/acme/vacancies')).status, 403)
+      await call('root', 'PATCH', `/api/users/${ids.userNone.id}`, { role: 'user' })
+    })
+
     it('access cannot be granted to admins or guests', async () => {
       assert.equal((await call('root', 'POST', '/api/providers/acme/access', { userId: ids.adminA.id })).status, 400)
       assert.equal((await call('root', 'POST', '/api/providers/acme/access', { userId: ids.guest.id })).status, 400)

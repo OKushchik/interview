@@ -1,7 +1,6 @@
 import { Router } from 'express'
 import { createRequireAuth } from '../middleware/requireAuth.js'
-import { createRequireRole } from '../middleware/requireRole.js'
-import { createRequireProviderAccess } from '../middleware/requireProviderAccess.js'
+import { createRequireProviderAccess, requireProviderManage } from '../middleware/requireProviderAccess.js'
 import { normalizeQuizIds, toTopicDto, topicCreateSchema, topicUpdateSchema } from '../services/schemas.js'
 
 /**
@@ -12,7 +11,8 @@ import { normalizeQuizIds, toTopicDto, topicCreateSchema, topicUpdateSchema } fr
  */
 export function createTopicsRouter(db, jwtSecret, generator) {
   const router = Router({ mergeParams: true })
-  const requireAdmin = createRequireRole(db)('super_admin', 'provider_admin')
+  // Запис лише з рівнем 'manage' для цього провайдера (provider_admin «лише перегляд» — 403).
+  const requireAdmin = requireProviderManage
 
   router.use(createRequireAuth(jwtSecret))
   router.use(createRequireProviderAccess(db))
