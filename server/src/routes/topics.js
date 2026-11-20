@@ -93,13 +93,16 @@ export function createTopicsRouter(db, jwtSecret, generator) {
         return
       }
       const input = parsed.data
-      await row.update({
-        title: input.title,
-        description: input.description,
-        content: input.content,
-        quizQuestions: input.quizQuestions?.length ? normalizeQuizIds(input.quizQuestions) : null,
-      })
-      res.json({ topic: toTopicDto(row) })
+      const updated = await db.Topic.update(
+        {
+          title: input.title,
+          description: input.description,
+          content: input.content,
+          quizQuestions: input.quizQuestions?.length ? normalizeQuizIds(input.quizQuestions) : null,
+        },
+        { where: { id: row.id, providerId: req.provider.id } },
+      )
+      res.json({ topic: toTopicDto(updated) })
     } catch (error) {
       next(error)
     }

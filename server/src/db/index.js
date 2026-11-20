@@ -111,6 +111,11 @@ export const db = {
       const row = await Topic.create(values)
       return row.get({ plain: true })
     },
+    async update(values, { where }) {
+      const [count, rows] = await Topic.update(values, { where, returning: true })
+      if (count === 0 || !rows[0]) throw new Error('Topic not found')
+      return rows[0].get({ plain: true })
+    },
     async destroy({ where }) {
       return Topic.destroy({ where })
     },
