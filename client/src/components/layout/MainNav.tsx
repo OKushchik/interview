@@ -7,6 +7,7 @@ const LINK_BASE = 'flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-med
 
 /** Перемикач розділів: вакансії / аналіз статей. */
 export function MainNav() {
+  const isGuest = useAuthStore((s) => Boolean(s.user?.isGuest))
   const isAdmin = useAuthStore((s) => s.user?.role === 'super_admin' || s.user?.role === 'provider_admin')
   const first = useAuthStore((s) => s.user?.accessibleProviders?.[0])
   const vacanciesTo = first ? providerPath(first.slug, 'vacancies') : vacanciesPath
@@ -32,10 +33,12 @@ export function MainNav() {
         <FileText size={16} />
         Статті
       </Link>
-      <Link to={analysisPath} className={linkClass(inAnalysis)}>
-        <BarChart3 size={16} />
-        Аналіз
-      </Link>
+      {!isGuest && (
+        <Link to={analysisPath} className={linkClass(inAnalysis)}>
+          <BarChart3 size={16} />
+          Аналіз
+        </Link>
+      )}
       {isAdmin && (
         <Link to={resultsPath} className={linkClass(inResults)}>
           <Trophy size={16} />

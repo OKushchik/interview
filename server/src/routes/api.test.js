@@ -311,6 +311,8 @@ describe('multitenant API', () => {
       assert.ok(res.body.results.length > 0)
       assert.ok(res.body.results.every((r) => r.userId === ids.userA.id && r.report))
       assert.equal((await call(null, 'GET', '/api/test-results/interviews')).status, 401)
+      assert.equal((await call('guest', 'GET', '/api/test-results/interviews')).status, 403)
+      assert.equal((await call('guest', 'GET', '/api/test-results')).status, 403)
     })
 
     it('interview results: same scoping and sorting', async () => {

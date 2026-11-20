@@ -8,6 +8,19 @@ import { toInterviewResultDto, toOwnInterviewResultDto, toTeamResultDto, toTestR
 export function createTestResultsRouter(db, jwtSecret) {
   const router = Router()
   router.use(createRequireAuth(jwtSecret))
+  // У гостя результати не зберігаються, тож аналізу в нього немає.
+  router.use(async (req, res, next) => {
+    try {
+      const user = await db.User.findOne({ where: { id: req.user.id } })
+      if (!user || user.isGuest) {
+        res.status(403).json({ error: 'Not available for guests' })
+        return
+      }
+      next()
+    } catch (error) {
+      next(error)
+    }
+  })
 
   router.get('/', async (req, res, next) => {
     try {

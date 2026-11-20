@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CheckCircle2, ChevronDown, XCircle } from 'lucide-react'
+import { Navigate } from 'react-router-dom'
 import type { OwnInterviewResult, TestResult } from '@/types'
+import { useAuthStore } from '@/store/authStore'
 import { testResultsApi } from '@/services/testResultsApi'
 import { Header } from '@/components/layout/Header'
 import { Card } from '@/components/ui/Card'
@@ -154,10 +156,14 @@ function InterviewResults({ results }: { results: OwnInterviewResult[] }) {
 
 /** Вкладка «Аналіз»: історія власних результатів — співбесіди та тести за статтями. */
 export function AnalysisPage() {
+  const isGuest = useAuthStore((s) => Boolean(s.user?.isGuest))
   const [tab, setTab] = useState<Tab>('interviews')
-  const interviews = useResults(testResultsApi.listInterviews, tab === 'interviews')
-  const articles = useResults(testResultsApi.list, tab === 'articles')
+  const interviews = useResults(testResultsApi.listInterviews, tab === 'interviews' && !isGuest)
+  const articles = useResults(testResultsApi.list, tab === 'articles' && !isGuest)
   const current = tab === 'interviews' ? interviews : articles
+
+  // Гість результатів не має: прямий перехід за посиланням веде на головну.
+  if (isGuest) return <Navigate to="/" replace />
 
   return (
     <div className="min-h-screen">
